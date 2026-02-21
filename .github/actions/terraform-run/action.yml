@@ -17,6 +17,9 @@ inputs:
   cloudflare_api_token:
     description: API token for Cloudflare
     required: true
+  hcloud_token:
+    description: API token for Hetzner cloud
+    required: true
 
 runs:
   using: composite
@@ -39,6 +42,7 @@ runs:
       shell: bash
       env:
         CLOUDFLARE_API_TOKEN: "${{inputs.cloudflare_api_token}}"
+        HCLOUD_TOKEN: "${{ inputs.hcloud_token }}"
       run: |
         if [[ "${{ inputs.command }}" == "plan" ]]; then
           util/terraform.sh "${{ inputs.directory }}" plan -out=plan.tfplan

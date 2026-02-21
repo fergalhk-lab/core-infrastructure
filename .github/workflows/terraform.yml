@@ -74,6 +74,7 @@ jobs:
           role_to_assume: ${{ matrix.roleARN }}
           aws_region: ${{ matrix.awsRegion }}
           cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          hcloud_token: ${{ HCLOUD_TOKEN_BUILD }}
 
       - name: Upload plan artifact
         if: github.event_name == 'push'
@@ -124,3 +125,4 @@ jobs:
           role_to_assume: ${{ matrix.roleARN }}
           aws_region: ${{ matrix.awsRegion }}
           cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          hcloud_token: ${{ HCLOUD_TOKEN_BUILD }}

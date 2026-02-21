@@ -12,3 +12,5 @@ modules:
   - path: foundations/aws/account-bootstrap
     aws: *awsPlatformEUW1
   - path: edge/zones
+  - path: foundations/hetzner/management-plane
+    aws: *awsPlatformEUW1
