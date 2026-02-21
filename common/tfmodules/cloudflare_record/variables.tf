@@ -9,3 +9,8 @@ variable "subdomain" {
 variable "content" {
   type = string
 }
+
+variable "proxied" {
+  type    = bool
+  default = true
+}
