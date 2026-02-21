@@ -36,6 +36,7 @@ jobs:
     if: needs.detect-changes.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         dir: ${{ fromJSON(needs.detect-changes.outputs.matrix) }}
     steps:
@@ -47,4 +48,4 @@ jobs:
         with:
           directory: ${{ matrix.dir }}
           save_snapshot: ${{ github.event_name == 'push' }}
-          hcloud_token: ${{ secrets.HCLOUD_TOKEN }}
+          hcloud_token: ${{ secrets.HCLOUD_TOKEN_BUILD }}

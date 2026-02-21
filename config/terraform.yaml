@@ -1,0 +1,14 @@
+awsAccounts:
+  platform:
+    roleARN: arn:aws:iam::740994137039:role/github-core-infrastructure
+
+modules:
+  - path: foundations/terraform-state-backend/bucket
+    aws: &awsPlatformEUW1
+      account: platform
+      region: eu-west-1
+  - path: foundations/terraform-state-backend/access
+    aws: *awsPlatformEUW1
+  - path: foundations/aws/account-bootstrap
+    aws: *awsPlatformEUW1
+  - path: edge/zones
