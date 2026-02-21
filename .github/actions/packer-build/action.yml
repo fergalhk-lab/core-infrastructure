@@ -14,10 +14,24 @@ inputs:
     required: true
 
 runs:
-  using: docker
-  image: Dockerfile
-  env:
-    HCLOUD_TOKEN: ${{ inputs.hcloud_token }}
-  args:
-    - ${{ inputs.directory }}
-    - ${{ inputs.save_snapshot }}
+  using: composite
+  steps:
+    - name: Install Packer & Ansible
+      shell: bash
+      run: |
+        curl -fsSL https://apt.releases.hashicorp.com/gpg \
+          | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+        echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
+          https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
+          | sudo tee /etc/apt/sources.list.d/hashicorp.list
+        sudo apt-get update -qq
+        sudo apt-get install -y --no-install-recommends packer ansible
+
+    - name: Packer init & build
+      shell: bash
+      working-directory: ${{ inputs.directory }}
+      env:
+        HCLOUD_TOKEN: ${{ inputs.hcloud_token }}
+      run: |
+        packer init .
+        packer build -var "save_snapshot=${{ inputs.save_snapshot }}" .

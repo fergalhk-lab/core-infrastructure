@@ -19,6 +19,10 @@
       ansible.builtin.systemd_service:
         state: restarted
         name: fail2ban
+    - name: Configure sshd auth
+      ansible.builtin.copy:
+        src: files/sshd/auth.conf
+        dest: /etc/ssh/sshd_config.d/auth.conf
     - name: Disable ufw
       ansible.builtin.command: ufw disable
     - name: Download k3s binary
