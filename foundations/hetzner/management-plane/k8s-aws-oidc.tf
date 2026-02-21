@@ -23,7 +23,8 @@ module "management_k8s_anonymous_issuer_dns" {
 }
 
 data "tls_certificate" "management_k8s_oidc" {
-  url = "tls://${module.management_k8s_anonymous_issuer_dns.fqdn}:443"
+  depends_on = [module.management_k8s_anonymous_issuer_dns]
+  url        = "tls://${module.management_k8s_anonymous_issuer_dns.fqdn}:443"
 }
 
 resource "aws_iam_openid_connect_provider" "management_k8s" {
