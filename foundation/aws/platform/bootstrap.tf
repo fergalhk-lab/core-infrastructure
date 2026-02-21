@@ -1,3 +1,3 @@
 module "account_bootstrap" {
-  source = "../../../../common/tfmodules/aws/account-bootstrap"
+  source = "../../../common/tfmodules/aws/account-bootstrap"
 }
