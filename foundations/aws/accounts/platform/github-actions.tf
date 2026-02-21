@@ -41,7 +41,36 @@ resource "aws_iam_role" "github_core_infrastructure" {
   assume_role_policy = data.aws_iam_policy_document.github_core_infrastructure_assume_role.json
 }
 
-resource "aws_iam_role_policy_attachment" "github_core_infrastructure_admin" {
-  role       = aws_iam_role.github_core_infrastructure.name
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+data "aws_iam_policy_document" "github_core_infrastructure" {
+  statement {
+    effect    = "Allow"
+    actions   = ["sts:AssumeRole"]
+    resources = formatlist("arn:aws:iam::%s:role/terraform", values(module.meta.aws_account_ids))
+  }
+
+  statement {
+    sid    = "ListBucket"
+    effect = "Allow"
+    actions = [
+      "s3:ListBucket",
+      "s3:GetBucketVersioning",
+    ]
+    resources = [data.aws_s3_bucket.terraform_states.arn]
+  }
+
+  statement {
+    sid    = "ReadWriteObjects"
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject",
+    ]
+    resources = [format("%s/*", data.aws_s3_bucket.terraform_states.arn)]
+  }
+}
+
+resource "aws_iam_role_policy" "github_core_infrastructure" {
+  role   = aws_iam_role.github_core_infrastructure.name
+  policy = data.aws_iam_policy_document.github_core_infrastructure.json
 }
