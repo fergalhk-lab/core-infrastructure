@@ -1,7 +1,7 @@
 locals {
   management_k8s = {
     name          = "management-k8s"
-    image_version = "20260221185753"
+    image_version = "20260221204139"
     size          = "cx23"
     location      = "nbg1" // Nuremberg
     endpoint = {
@@ -19,11 +19,8 @@ resource "hcloud_server" "management_k8s" {
   ssh_keys    = [for ssh_key in hcloud_ssh_key.management : ssh_key.id]
   user_data   = <<EOD
 #cloud-config
-write_files:
-- path: /etc/k3s-hostname
-  owner: root:root
-  permissions: '0644'
-  content: "${local.management_k8s.endpoint.subdomain}.${local.management_k8s.endpoint.zone}"
+runcmd:
+  - /root/bootstrap-k8s.sh '${local.management_k8s.endpoint.subdomain}.${local.management_k8s.endpoint.zone}'
 EOD
 
   network {
