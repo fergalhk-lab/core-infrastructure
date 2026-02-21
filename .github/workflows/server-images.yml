@@ -9,12 +9,28 @@ on:
       - main
     paths:
       - "images/server/**"
+  workflow_dispatch:
 
 permissions:
   id-token: write
   contents: read
 
 jobs:
+  get-projects:
+    runs-on: ubuntu-latest
+    outputs:
+      projects: ${{ steps.read.outputs.projects }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Read project names
+        id: read
+        run: |
+          projects=$(yq -o=json -I=0 '.projects | keys' config/hetzner.yaml)
+          echo "projects=$projects" >> $GITHUB_OUTPUT
+
   detect-changes:
     runs-on: ubuntu-latest
     outputs:
@@ -36,13 +52,14 @@ jobs:
           matrix: true
 
   build:
-    needs: detect-changes
+    needs: [detect-changes, get-projects]
     if: needs.detect-changes.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         dir: ${{ fromJSON(needs.detect-changes.outputs.matrix) }}
+        project: ${{ fromJSON(needs.get-projects.outputs.projects) }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -51,5 +68,5 @@ jobs:
         uses: ./.github/actions/packer-build
         with:
           directory: ${{ matrix.dir }}
-          save_snapshot: ${{ github.event_name == 'push' }}
-          hcloud_project_name: management
+          save_snapshot: ${{ github.ref == 'refs/heads/main' }}
+          hcloud_project_name: ${{ matrix.project }}

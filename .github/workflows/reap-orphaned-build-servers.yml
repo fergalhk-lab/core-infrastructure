@@ -10,8 +10,28 @@ permissions:
   contents: read
 
 jobs:
-  reap:
+  get-projects:
     runs-on: ubuntu-latest
+    outputs:
+      projects: ${{ steps.read.outputs.projects }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Read project names
+        id: read
+        run: |
+          projects=$(yq -o=json -I=0 '.projects | keys' config/hetzner.yaml)
+          echo "projects=$projects" >> $GITHUB_OUTPUT
+
+  reap:
+    needs: get-projects
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: ${{ fromJSON(needs.get-projects.outputs.projects) }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,7 +41,7 @@ jobs:
         id: get-token
         uses: ./.github/actions/get-hcloud-token
         with:
-          project_name: management
+          project_name: ${{ matrix.project }}
 
       - uses: actions/setup-go@v5
         with:
