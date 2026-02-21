@@ -3,7 +3,7 @@ locals {
     security_level = var.security_level
   }
 
-  cloudflare_account_id = "9072364b7171093a15896dd5e86613a6"
+  cloudflare_account_id = module.meta.cloudflare_account_id
 }
 
 resource "cloudflare_zone" "this" {
