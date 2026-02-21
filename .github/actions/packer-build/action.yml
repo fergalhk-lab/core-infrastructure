@@ -1,0 +1,23 @@
+name: Packer Build
+description: Build a Packer image targeting Hetzner Cloud
+
+inputs:
+  directory:
+    description: Relative path to the packer image directory (e.g. images/server/k3s-instance)
+    required: true
+  save_snapshot:
+    description: Pass true to persist the Hetzner snapshot
+    required: false
+    default: "false"
+  hcloud_token:
+    description: Hetzner Cloud API token (read/write)
+    required: true
+
+runs:
+  using: docker
+  image: Dockerfile
+  env:
+    HCLOUD_TOKEN: ${{ inputs.hcloud_token }}
+  args:
+    - ${{ inputs.directory }}
+    - ${{ inputs.save_snapshot }}

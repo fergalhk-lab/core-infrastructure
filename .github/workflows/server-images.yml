@@ -1,0 +1,50 @@
+name: Build server images
+
+on:
+  pull_request:
+    paths:
+      - "images/server/**"
+  push:
+    branches:
+      - main
+    paths:
+      - "images/server/**"
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.changed.outputs.all_changed_files }}
+      has_changes: ${{ steps.changed.outputs.any_changed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed directories
+        id: changed
+        uses: tj-actions/changed-files@v47
+        with:
+          files: images/server/*/**
+          dir_names: true
+          dir_names_max_depth: 3
+          matrix: true
+
+  build:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dir: ${{ fromJSON(needs.detect-changes.outputs.matrix) }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build packer image
+        uses: ./.github/actions/packer-build
+        with:
+          directory: ${{ matrix.dir }}
+          save_snapshot: ${{ github.event_name == 'push' }}
+          hcloud_token: ${{ secrets.HCLOUD_TOKEN }}
