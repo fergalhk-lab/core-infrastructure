@@ -29,8 +29,8 @@ curl -sfL https://get.k3s.io | sh -s - \
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
 for _ in $(seq 1 20); do
-    if kubectl get --raw /healthz >/dev/null 2>&1;then
-        echo "API server is healthy" >&2
+    if kubectl get IngressRoute >/dev/null 2>&1;then
+        echo "API server is ready" >&2
         touch /tmp/k8s-ready
         break
     fi
