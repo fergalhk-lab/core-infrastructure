@@ -1,3 +1,15 @@
+locals {
+  management_k8s = {
+    name          = "management-k8s"
+    image_version = "20260221155452"
+    size          = "cx23"
+    endpoint = {
+      zone      = "fergal.website"
+      subdomain = "management.k8s"
+    }
+  }
+}
+
 resource "hcloud_network" "management" {
   name     = "management"
   ip_range = "10.0.0.0/20"
@@ -21,4 +33,12 @@ resource "hcloud_server" "management_k8s" {
   }
 
   depends_on = [hcloud_network_subnet.management]
+}
+
+module "management_k8s_dns" {
+  source = "../../../common/tfmodules/cloudflare_record"
+
+  zone_name = local.management_k8s.endpoint.zone
+  subdomain = local.management_k8s.endpoint.subdomain
+  content   = hcloud_server.management_k8s.ipv4_address
 }
