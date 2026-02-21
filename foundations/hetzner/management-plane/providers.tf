@@ -10,7 +10,7 @@ module "authmeta" {
 }
 
 provider "cloudflare" {
-  api_token = module.authmeta.cloudflare_api_key
+  api_key = module.authmeta.cloudflare_api_key
 }
 
 provider "hcloud" {
