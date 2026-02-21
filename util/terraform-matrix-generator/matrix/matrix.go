@@ -2,7 +2,6 @@ package matrix
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/fergalhk-lab/core-infrastructure/util/terraform-matrix-generator/config"
 )
@@ -13,16 +12,11 @@ type Entry struct {
 	AWSRegion string `json:"awsRegion,omitempty"`
 }
 
-// Generate returns a matrix entry for each module in cfg that is affected by
-// changedFiles. If changedFiles is empty, all modules are returned.
-func Generate(cfg config.Config, changedFiles []string) ([]Entry, error) {
+// Generate returns a matrix entry for each module in cfg.
+func Generate(cfg config.Config) ([]Entry, error) {
 	entries := make([]Entry, 0)
 
 	for _, module := range cfg.Modules {
-		if len(changedFiles) > 0 && !isAffected(module.Path, changedFiles) {
-			continue
-		}
-
 		entry := Entry{Dir: module.Path}
 
 		if module.AWS != nil {
@@ -38,14 +32,4 @@ func Generate(cfg config.Config, changedFiles []string) ([]Entry, error) {
 	}
 
 	return entries, nil
-}
-
-func isAffected(modulePath string, changedFiles []string) bool {
-	prefix := modulePath + "/"
-	for _, f := range changedFiles {
-		if f == modulePath || strings.HasPrefix(f, prefix) {
-			return true
-		}
-	}
-	return false
 }

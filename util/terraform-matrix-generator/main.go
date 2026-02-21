@@ -26,7 +26,7 @@ func main() {
 		log.Fatalf("error parsing config: %s", err)
 	}
 
-	entries, err := matrix.Generate(cfg, flag.Args())
+	entries, err := matrix.Generate(cfg)
 	if err != nil {
 		log.Fatalf("error generating matrix: %s", err)
 	}

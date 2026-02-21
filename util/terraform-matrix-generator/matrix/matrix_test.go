@@ -29,45 +29,14 @@ var testConfig = config.Config{
 	},
 }
 
-func TestGenerate_NoChangedFiles_ReturnsAllModules(t *testing.T) {
-	entries, err := matrix.Generate(testConfig, nil)
+func TestGenerate(t *testing.T) {
+	entries, err := matrix.Generate(testConfig)
 	require.NoError(t, err)
-	assert.Len(t, entries, 3)
-}
-
-func TestGenerate_ChangedFileUnderModule_ReturnsOnlyThatModule(t *testing.T) {
-	entries, err := matrix.Generate(testConfig, []string{"infra/networking/main.tf"})
-	require.NoError(t, err)
-	require.Len(t, entries, 1)
-	assert.Equal(t, "infra/networking", entries[0].Dir)
-}
-
-func TestGenerate_ChangedFileMatchesMultipleModules(t *testing.T) {
-	entries, err := matrix.Generate(testConfig, []string{"infra/networking/main.tf", "infra/dns/zones.tf"})
-	require.NoError(t, err)
-	assert.Len(t, entries, 2)
-}
-
-func TestGenerate_ChangedFileMatchesNoModule_ReturnsEmpty(t *testing.T) {
-	entries, err := matrix.Generate(testConfig, []string{"untracked/file.tf"})
-	require.NoError(t, err)
-	assert.Empty(t, entries)
-}
-
-func TestGenerate_AWSModule_PopulatesCredentials(t *testing.T) {
-	entries, err := matrix.Generate(testConfig, []string{"infra/networking/main.tf"})
-	require.NoError(t, err)
-	require.Len(t, entries, 1)
-	assert.Equal(t, "arn:aws:iam::123456789012:role/github", entries[0].RoleARN)
-	assert.Equal(t, "eu-west-1", entries[0].AWSRegion)
-}
-
-func TestGenerate_NonAWSModule_OmitsCredentials(t *testing.T) {
-	entries, err := matrix.Generate(testConfig, []string{"edge/cloudflare/main.tf"})
-	require.NoError(t, err)
-	require.Len(t, entries, 1)
-	assert.Empty(t, entries[0].RoleARN)
-	assert.Empty(t, entries[0].AWSRegion)
+	assert.Equal(t, []matrix.Entry{
+		{Dir: "infra/networking", RoleARN: "arn:aws:iam::123456789012:role/github", AWSRegion: "eu-west-1"},
+		{Dir: "infra/dns", RoleARN: "arn:aws:iam::123456789012:role/github", AWSRegion: "us-east-1"},
+		{Dir: "edge/cloudflare"},
+	}, entries)
 }
 
 func TestGenerate_UnknownAccount_ReturnsError(t *testing.T) {
@@ -77,13 +46,6 @@ func TestGenerate_UnknownAccount_ReturnsError(t *testing.T) {
 			{Path: "infra/networking", AWS: &config.ModuleAWS{Account: "nonexistent", Region: "eu-west-1"}},
 		},
 	}
-	_, err := matrix.Generate(cfg, nil)
+	_, err := matrix.Generate(cfg)
 	require.Error(t, err)
-}
-
-func TestGenerate_DoesNotMatchPathPrefix(t *testing.T) {
-	// "infra/networking-extra/main.tf" must not match the "infra/networking" module
-	entries, err := matrix.Generate(testConfig, []string{"infra/networking-extra/main.tf"})
-	require.NoError(t, err)
-	assert.Empty(t, entries)
 }
