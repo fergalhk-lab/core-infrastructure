@@ -29,14 +29,6 @@ resource "hcloud_server" "management_k8s" {
   server_type = local.management_k8s.size
   location    = local.management_k8s.location
   ssh_keys    = [for ssh_key in hcloud_ssh_key.management : ssh_key.id]
-  user_data   = <<EOD
-#cloud-config
-write_files:
-  - path: /etc/k3s-hostname
-    owner: root:root
-    permissions: '0644'
-    content: ${jsonencode(format("%s.%s", local.management_k8s.endpoint.subdomain, local.management_k8s.endpoint.zone))}
-EOD
 
   network {
     network_id = hcloud_network.management.id
