@@ -1,3 +1,6 @@
-data "cloudflare_zone" "name" {
-  name = var.zone_name
+data "cloudflare_zone" "this" {
+  filter = {
+    match = "all"
+    name  = var.zone_name
+  }
 }
