@@ -8,6 +8,6 @@ provider "aws" {
 
 provider "aws" {
   assume_role {
-    role_arn = local.aws_deploy_role_arns[local.aws_account]
+    role_arn = module.meta.aws_deploy_role_arns[local.aws_account]
   }
 }
