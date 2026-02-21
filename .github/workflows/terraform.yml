@@ -1,0 +1,124 @@
+name: Terraform
+
+on:
+  pull_request:
+    paths:
+      - "**/*.tf"
+      - "config/terraform.yaml"
+  push:
+    branches:
+      - main
+    paths:
+      - "**/*.tf"
+      - "config/terraform.yaml"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.generate.outputs.matrix }}
+      has_changes: ${{ steps.generate.outputs.has_changes }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Get changed files
+        id: changed
+        uses: tj-actions/changed-files@v47
+        with:
+          files: |
+            **/*.tf
+            config/terraform.yaml
+
+      - name: Generate matrix
+        id: generate
+        run: |
+          matrix=$(go run ./util/terraform-matrix-generator ${{ steps.changed.outputs.all_changed_files }})
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          echo "has_changes=$([ "$matrix" != '[]' ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+  plan:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    name: plan (${{ matrix.dir }})
+    concurrency:
+      group: terraform-${{ matrix.dir }}
+      cancel-in-progress: false
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.detect-changes.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set artifact name
+        id: meta
+        run: echo "artifact=tfplan-$(echo '${{ matrix.dir }}' | tr '/' '-')" >> "$GITHUB_OUTPUT"
+
+      - name: Terraform plan
+        uses: ./.github/actions/terraform-run
+        with:
+          directory: ${{ matrix.dir }}
+          command: plan
+          role_to_assume: ${{ matrix.roleARN }}
+          aws_region: ${{ matrix.awsRegion }}
+
+      - name: Upload plan artifact
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.meta.outputs.artifact }}
+          path: ${{ matrix.dir }}/plan.tfplan
+          retention-days: 1
+
+  apply-gate:
+    needs: plan
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: terraform-apply
+    steps:
+      - run: echo "Approved"
+
+  apply:
+    needs: [detect-changes, apply-gate]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    name: apply (${{ matrix.dir }})
+    concurrency:
+      group: terraform-${{ matrix.dir }}
+      cancel-in-progress: false
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.detect-changes.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set artifact name
+        id: meta
+        run: echo "artifact=tfplan-$(echo '${{ matrix.dir }}' | tr '/' '-')" >> "$GITHUB_OUTPUT"
+
+      - name: Download plan artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ steps.meta.outputs.artifact }}
+          path: ${{ matrix.dir }}
+
+      - name: Terraform apply
+        uses: ./.github/actions/terraform-run
+        with:
+          directory: ${{ matrix.dir }}
+          command: apply
+          role_to_assume: ${{ matrix.roleARN }}
+          aws_region: ${{ matrix.awsRegion }}
