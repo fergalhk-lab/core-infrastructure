@@ -1,6 +1,9 @@
 locals {
   // TODO - update this
   hetzner_project = "build"
+
+  // aws account the cluster is authorized to assume roles in
+  auth_aws_account = "platform"
 }
 
 module "authmeta" {
@@ -15,4 +18,10 @@ provider "cloudflare" {
 
 provider "hcloud" {
   token = module.authmeta.hetzner_keys[local.hetzner_project]
+}
+
+provider "aws" {
+  assume_role {
+    role_arn = module.meta.aws_deploy_role_arns[local.auth_aws_account]
+  }
 }

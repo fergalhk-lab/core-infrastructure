@@ -4,7 +4,7 @@ locals {
     image_version = "20260221204139"
     size          = "cx23"
     location      = "nbg1" // Nuremberg
-    endpoint = {
+    apiserver_endpoint = {
       zone      = "fergal.website"
       subdomain = "k8s.management"
     }
@@ -20,7 +20,7 @@ resource "hcloud_server" "management_k8s" {
   user_data   = <<EOD
 #cloud-config
 runcmd:
-  - /root/bootstrap-k8s.sh '${local.management_k8s.endpoint.subdomain}.${local.management_k8s.endpoint.zone}'
+  - /root/bootstrap-k8s.sh '${local.management_k8s.apiserver_endpoint.subdomain}.${local.management_k8s.apiserver_endpoint.zone}'
 EOD
 
   network {
@@ -30,11 +30,11 @@ EOD
   depends_on = [hcloud_network_subnet.management]
 }
 
-module "management_k8s_dns" {
+module "management_k8s_apiserver_dns" {
   source = "../../../common/tfmodules/cloudflare_record"
 
-  zone_name = local.management_k8s.endpoint.zone
-  subdomain = local.management_k8s.endpoint.subdomain
+  zone_name = local.management_k8s.apiserver_endpoint.zone
+  subdomain = local.management_k8s.apiserver_endpoint.subdomain
   content   = hcloud_server.management_k8s.ipv4_address
   proxied   = false // proxying breaks mTLS
 }
