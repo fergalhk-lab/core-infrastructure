@@ -27,6 +27,13 @@ resource "hcloud_server" "management_k8s" {
   image       = data.hcloud_image.management_k8s_snapshot.id
   server_type = local.management_k8s.size
   ssh_keys    = [for ssh_key in hcloud_ssh_key.management : ssh_key.id]
+  user_data   = <<EOD
+write_files:
+  - path: /etc/k3s-hostname
+    owner: root:root
+    permissions: '0644'
+    content: ${jsonencode(format("%s.%s", var.management_k8s.endpoint.subdomain, var.management_k8s.endpoint.zone))}
+EOD
 
   network {
     network_id = hcloud_network.management.id
@@ -41,4 +48,5 @@ module "management_k8s_dns" {
   zone_name = local.management_k8s.endpoint.zone
   subdomain = local.management_k8s.endpoint.subdomain
   content   = hcloud_server.management_k8s.ipv4_address
+  proxied   = false // proxying breaks mTLS
 }
