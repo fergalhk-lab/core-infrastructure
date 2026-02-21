@@ -1,3 +1,3 @@
 module "meta" {
-  source = "../../../common/meta"
+  source = "../../../common/tfmodules/meta"
 }
