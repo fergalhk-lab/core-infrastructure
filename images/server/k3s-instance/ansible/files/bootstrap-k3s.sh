@@ -8,6 +8,7 @@ if [ $# -ne 2 ]; then
 fi
 
 K3S_HOSTNAME="${1}"
+K3S_API_PORT=6443
 PUBLIC_ISSUER_HOSTNAME="${2}"
 
 export INSTALL_K3S_SKIP_DOWNLOAD=true
@@ -19,7 +20,8 @@ curl -sfL https://get.k3s.io | sh -s - \
     server \
     --tls-san 127.0.0.1 \
     --tls-san "${K3S_HOSTNAME}" \
-    --kube-apiserver-arg="service-account-issuer=${PUBLIC_ISSUER_HOSTNAME}" \
+    --kube-apiserver-arg="service-account-issuer=https://${PUBLIC_ISSUER_HOSTNAME}" \
+    --kube-apiserver-arg="service-account-issuer=https://${K3S_HOSTNAME}:${K3S_API_PORT}" \
     --kube-apiserver-arg="api-audiences=sts.amazonaws.com" \
     --kube-apiserver-arg="anonymous-auth=true"
 
