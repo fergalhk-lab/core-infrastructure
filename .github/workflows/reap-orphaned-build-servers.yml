@@ -21,7 +21,7 @@ jobs:
         id: get-token
         uses: ./.github/actions/get-hcloud-token
         with:
-          project_name: build
+          project_name: management
 
       - uses: actions/setup-go@v5
         with:

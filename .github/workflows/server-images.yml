@@ -52,4 +52,4 @@ jobs:
         with:
           directory: ${{ matrix.dir }}
           save_snapshot: ${{ github.event_name == 'push' }}
-          hcloud_project_name: build
+          hcloud_project_name: management

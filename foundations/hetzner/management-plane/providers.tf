@@ -1,6 +1,5 @@
 locals {
-  // TODO - update this
-  hetzner_project = "build"
+  hetzner_project = "management"
 
   // aws account the cluster is authorized to assume roles in
   auth_aws_account = "platform"
