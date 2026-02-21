@@ -3,7 +3,7 @@ locals {
 }
 
 module "meta" {
-  source = "../../../common/tfmodules/meta"
+  source = "../../common/tfmodules/meta"
 }
 
 provider "aws" {
