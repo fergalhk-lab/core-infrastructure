@@ -22,9 +22,21 @@ module "management_k8s_anonymous_issuer_dns" {
   proxied   = true
 }
 
+// wait for DNS record to be resolvable, before we read its TLS cert in the next block
+resource "time_sleep" "issuer_dns_record" {
+  create_duration = "90s"
+
+  triggers = {
+    fqdn = module.management_k8s_anonymous_issuer_dns.fqdn
+  }
+}
+
 data "tls_certificate" "management_k8s_oidc" {
-  depends_on = [module.management_k8s_anonymous_issuer_dns]
-  url        = "tls://${module.management_k8s_anonymous_issuer_dns.fqdn}:443"
+  depends_on = [
+    module.management_k8s_anonymous_issuer_dns,
+    time_sleep.issuer_dns_record,
+  ]
+  url = "tls://${module.management_k8s_anonymous_issuer_dns.fqdn}:443"
 }
 
 resource "aws_iam_openid_connect_provider" "management_k8s" {
