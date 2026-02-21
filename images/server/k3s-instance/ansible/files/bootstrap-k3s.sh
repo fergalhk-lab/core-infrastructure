@@ -46,3 +46,4 @@ fi
 
 echo "Enabling anonymous access to OIDC discovery endpoints" >&2
 sed "s|ISSUER_HOSTNAME|${PUBLIC_ISSUER_HOSTNAME}|g" /root/oidc-anonymous-access.yaml | kubectl apply -f -
+
