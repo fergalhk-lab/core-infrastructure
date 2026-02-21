@@ -34,7 +34,7 @@ write_files:
   - path: /etc/k3s-hostname
     owner: root:root
     permissions: '0644'
-    content: ${jsonencode(format("%s.%s", var.management_k8s.endpoint.subdomain, var.management_k8s.endpoint.zone))}
+    content: ${jsonencode(format("%s.%s", local.management_k8s.endpoint.subdomain, local.management_k8s.endpoint.zone))}
 EOD
 
   network {
