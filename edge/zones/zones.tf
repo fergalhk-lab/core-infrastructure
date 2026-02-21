@@ -5,7 +5,7 @@ locals {
   }
 
   zone_defaults = {
-    security_level = "medium"
+    security_level = "high"
   }
 }
 

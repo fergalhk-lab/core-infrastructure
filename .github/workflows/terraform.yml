@@ -73,6 +73,7 @@ jobs:
           command: plan
           role_to_assume: ${{ matrix.roleARN }}
           aws_region: ${{ matrix.awsRegion }}
+          cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
       - name: Upload plan artifact
         if: github.event_name == 'push'
@@ -122,3 +123,4 @@ jobs:
           command: apply
           role_to_assume: ${{ matrix.roleARN }}
           aws_region: ${{ matrix.awsRegion }}
+          cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
