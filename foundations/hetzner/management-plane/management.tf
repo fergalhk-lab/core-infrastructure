@@ -14,7 +14,7 @@ resource "hcloud_server" "management_k8s" {
   name        = local.management_k8s.name
   image       = data.hcloud_image.management_k8s_snapshot.id
   server_type = local.management_k8s.size
-  ssh_keys    = [hcloud_ssh_key.management.id]
+  ssh_keys    = [for ssh_key in hcloud_ssh_key.management : ssh_key.id]
 
   network {
     network_id = hcloud_network.management.id
