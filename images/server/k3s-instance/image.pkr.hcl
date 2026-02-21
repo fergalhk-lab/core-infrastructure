@@ -11,7 +11,8 @@ source "hcloud" "base" {
     type       = "packer-build"
     build_time = local.build_time
   }
-  snapshot_name = var.save_snapshot ? format("k3s-%s", local.build_time) : null
+  snapshot_name        = format("k3s-%s", local.build_time)
+  skip_create_snapshot = !var.save_snapshot
   snapshot_labels = {
     instance = "k3s"
     base     = "ubuntu-22.04"
