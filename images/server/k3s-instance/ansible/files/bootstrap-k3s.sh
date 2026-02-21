@@ -2,15 +2,13 @@
 
 set -eEuo pipefail
 
-export INSTALL_K3S_SKIP_DOWNLOAD=true
-HOSTNAME_FILE=/etc/k3s-hostname
-
-if ! [ -f "${HOSTNAME_FILE}" ]; then
-    echo "ERROR: File ${HOSTNAME_FILE} not found!" >&2
+if [ $# -ne 1 ]; then
+    echo "Usage: ${0} PUBLIC_HOSTNAME" >&2
     exit 1
 fi
+K3S_HOSTNAME="${1}"
 
-K3S_HOSTNAME="$(cat "${HOSTNAME_FILE}")"
+export INSTALL_K3S_SKIP_DOWNLOAD=true
 
 echo "Using hostname ${K3S_HOSTNAME} as SAN" >&2
 
