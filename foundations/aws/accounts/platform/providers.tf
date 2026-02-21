@@ -2,10 +2,6 @@ locals {
   aws_account = "platform"
 }
 
-module "meta" {
-  source = "../../../../common/tfmodules/meta"
-}
-
 provider "aws" {
   alias = "bootstrap"
 }
