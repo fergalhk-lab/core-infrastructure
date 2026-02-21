@@ -21,3 +21,15 @@ module "management_k8s_anonymous_issuer_dns" {
   content   = hcloud_server.management_k8s.ipv4_address
   proxied   = true
 }
+
+data "tls_certificate" "management_k8s_oidc" {
+  url = "tls://${module.management_k8s_anonymous_issuer_dns.fqdn}:443"
+}
+
+resource "aws_iam_openid_connect_provider" "management_k8s" {
+  url = "https://${module.management_k8s_anonymous_issuer_dns.fqdn}"
+
+  client_id_list = ["sts.amazonaws.com"]
+
+  thumbprint_list = [data.tls_certificate.management_k8s_oidc.certificates[0].sha1_fingerprint]
+}
