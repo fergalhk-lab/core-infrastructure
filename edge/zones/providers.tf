@@ -4,5 +4,5 @@ module "authmeta" {
 }
 
 provider "cloudflare" {
-  api_key = module.authmeta.cloudflare_api_key
+  api_token = module.authmeta.cloudflare_api_key
 }
