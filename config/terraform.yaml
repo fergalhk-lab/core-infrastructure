@@ -1,6 +1,5 @@
 modules:
   - foundations/terraform-state-backend/bucket
-  - foundations/terraform-state-backend/access
   - foundations/aws/accounts/platform
   - edge/zones
   - foundations/hetzner/management-plane
