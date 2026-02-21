@@ -9,13 +9,19 @@ inputs:
     description: Pass true to persist the Hetzner snapshot
     required: false
     default: "false"
-  hcloud_token:
-    description: Hetzner Cloud API token (read/write)
+  hcloud_project_name:
+    description: Hetzner Cloud Project Name
     required: true
 
 runs:
   using: composite
   steps:
+    - name: Get token
+      id: get-token
+      uses: ./.github/actions/get-hcloud-token
+      with:
+        project_name: ${{ inputs.hcloud_project_name }}
+
     - name: Install Packer & Ansible
       shell: bash
       run: |
@@ -31,7 +37,7 @@ runs:
       shell: bash
       working-directory: ${{ inputs.directory }}
       env:
-        HCLOUD_TOKEN: ${{ inputs.hcloud_token }}
+        HCLOUD_TOKEN: ${{ steps.get-token.outputs.token }}
       run: |
         packer init .
         packer build -var "save_snapshot=${{ inputs.save_snapshot }}" .

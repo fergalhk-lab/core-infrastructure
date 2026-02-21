@@ -68,6 +68,15 @@ data "aws_iam_policy_document" "github_core_infrastructure" {
     ]
     resources = [format("%s/*", data.aws_s3_bucket.terraform_states.arn)]
   }
+
+  statement {
+    sid     = "GetAPIKeys"
+    effect  = "Allow"
+    actions = ["secretsmanager:GetSecretValue"]
+    resources = [
+      format("arn:aws:secretsmanager:*:%s:secret:apikeys/*", data.aws_caller_identity.current.account_id)
+    ]
+  }
 }
 
 resource "aws_iam_role_policy" "github_core_infrastructure" {

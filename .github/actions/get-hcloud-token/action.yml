@@ -1,0 +1,36 @@
+name: Get Hetzner Token
+description: Retrive token for Hetzner cloud
+
+inputs:
+  project_name:
+    description: Name of Hetzner cloud project
+    required: true
+
+outputs:
+  token:
+    description: The Hetzner token
+    value: ${{ steps.get-token.outputs.token }}
+
+runs:
+  using: composite
+  steps:
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::740994137039:role/github-core-infrastructure
+        aws-region: eu-west-1
+
+    - name: Get token
+      id: get-token
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        TOKEN=$(aws secretsmanager get-secret-value \
+          --secret-id "${{ inputs.secret-id }}" \
+          --region "${{ inputs.region }}" \
+          --query 'SecretString' \
+          --output text)
+
+        echo "::add-mask::$TOKEN"
+        echo "token=$TOKEN" >> "$GITHUB_OUTPUT"

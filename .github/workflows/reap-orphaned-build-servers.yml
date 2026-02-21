@@ -13,11 +13,18 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Get Hetzner token
+        id: get-token
+        uses: ./.github/actions/get-hcloud-token
+        with:
+          project_name: build
+
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
           cache: true
+
       - name: Delete servers
         env:
-          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN_BUILD }}
+          HCLOUD_TOKEN: ${{ steps.get-token.outputs.token }}
         run: go run ./util/reap-orphaned-servers -label-selector 'type=packer-build' -max-age 2h

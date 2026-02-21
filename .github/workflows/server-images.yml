@@ -48,4 +48,4 @@ jobs:
         with:
           directory: ${{ matrix.dir }}
           save_snapshot: ${{ github.event_name == 'push' }}
-          hcloud_token: ${{ secrets.HCLOUD_TOKEN_BUILD }}
+          hcloud_project_name: build
