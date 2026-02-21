@@ -9,7 +9,7 @@ modules:
       region: eu-west-1
   - path: foundations/terraform-state-backend/access
     aws: *awsPlatformEUW1
-  - path: foundations/aws/account-bootstrap
+  - path: foundations/aws/accounts/platform
     aws: *awsPlatformEUW1
   - path: edge/zones
   - path: foundations/hetzner/management-plane
