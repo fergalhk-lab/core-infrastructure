@@ -9,4 +9,5 @@ terraform {
   }
 }
 
+// TODO - replace this with role assume
 provider "aws" {}

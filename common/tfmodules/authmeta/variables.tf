@@ -4,6 +4,6 @@ variable "enable_cloudflare" {
 }
 
 variable "enabled_hetzner_projects" {
-  type    = list(string)
+  type    = set(string)
   default = []
 }

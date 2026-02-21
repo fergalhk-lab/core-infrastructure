@@ -19,15 +19,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-          cache: true
-
       - name: Generate matrix
         id: generate
         run: |
-          matrix=$(go run ./util/terraform-matrix-generator)
+          matrix=$(yq -o=json -I=0 '.modules | map({"dir": .})' config/terraform.yaml)
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
   plan:
@@ -53,8 +48,6 @@ jobs:
         with:
           directory: ${{ matrix.dir }}
           command: plan
-          role_to_assume: ${{ matrix.roleARN }}
-          aws_region: ${{ matrix.awsRegion }}
           cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           hcloud_token: ${{ secrets.HCLOUD_TOKEN_BUILD }}
 
@@ -104,7 +97,5 @@ jobs:
         with:
           directory: ${{ matrix.dir }}
           command: apply
-          role_to_assume: ${{ matrix.roleARN }}
-          aws_region: ${{ matrix.awsRegion }}
           cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           hcloud_token: ${{ secrets.HCLOUD_TOKEN_BUILD }}

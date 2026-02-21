@@ -1,16 +1,6 @@
-awsAccounts:
-  platform:
-    roleARN: arn:aws:iam::740994137039:role/github-core-infrastructure
-
 modules:
-  - path: foundations/terraform-state-backend/bucket
-    aws: &awsPlatformEUW1
-      account: platform
-      region: eu-west-1
-  - path: foundations/terraform-state-backend/access
-    aws: *awsPlatformEUW1
-  - path: foundations/aws/accounts/platform
-    aws: *awsPlatformEUW1
-  - path: edge/zones
-  - path: foundations/hetzner/management-plane
-    aws: *awsPlatformEUW1
+  - foundations/terraform-state-backend/bucket
+  - foundations/terraform-state-backend/access
+  - foundations/aws/accounts/platform
+  - edge/zones
+  - foundations/hetzner/management-plane
