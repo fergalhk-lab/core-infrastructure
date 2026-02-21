@@ -1,7 +1,7 @@
 locals {
   management_k8s = {
     name          = "management-k8s"
-    image_version = "20260221223457"
+    image_version = "20260221230215"
     size          = "cx23"
     location      = "nbg1" // Nuremberg
     apiserver_endpoint = {
