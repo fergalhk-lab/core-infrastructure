@@ -2,15 +2,9 @@ name: Run Terraform
 
 on:
   pull_request:
-    paths:
-      - "**/*.tf"
-      - "config/terraform.yaml"
   push:
     branches:
       - main
-    paths:
-      - "**/*.tf"
-      - "config/terraform.yaml"
   workflow_dispatch: {}
 
 permissions:
