@@ -20,6 +20,7 @@ curl -sfL https://get.k3s.io | sh -s - \
     server \
     --tls-san 127.0.0.1 \
     --tls-san "${K3S_HOSTNAME}" \
+    --kube-apiserver-arg="service-account-jwks-uri=https://${PUBLIC_ISSUER_HOSTNAME}/openid/v1/jwks" \
     --kube-apiserver-arg="service-account-issuer=https://${PUBLIC_ISSUER_HOSTNAME}" \
     --kube-apiserver-arg="service-account-issuer=https://${K3S_HOSTNAME}:${K3S_API_PORT}" \
     --kube-apiserver-arg="api-audiences=sts.amazonaws.com" \
