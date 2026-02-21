@@ -12,7 +12,6 @@ provider "aws" {
 
 provider "aws" {
   assume_role {
-    role_arn     = module.meta.aws_deploy_role_arns[local.aws_account]
-    session_name = "gha"
+    role_arn = module.meta.aws_deploy_role_arns[local.aws_account]
   }
 }
