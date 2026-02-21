@@ -27,8 +27,7 @@ runs:
         set -euo pipefail
 
         TOKEN=$(aws secretsmanager get-secret-value \
-          --secret-id "${{ inputs.secret-id }}" \
-          --region "${{ inputs.region }}" \
+          --secret-id "apikeys/hetzner/${{ inputs.project_name }}" \
           --query 'SecretString' \
           --output text)
 
