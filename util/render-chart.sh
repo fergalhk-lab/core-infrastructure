@@ -33,7 +33,7 @@ trap 'rm -f "$TMPFILE"' EXIT
 VALUES="$(yq '.values // {}' "$CONFIG")"
 printf '%s\n' "$VALUES" > "$TMPFILE"
 
-echo ">>> Rendering $CHART_NAME version $CHART_VERSION as release '$RELEASE' in namespace '$NAMESPACE'"
+echo ">>> Rendering $CHART_NAME version $CHART_VERSION as release '$RELEASE' in namespace '$NAMESPACE'" >&2
 helm template "$RELEASE" "$CHART_NAME" \
   --repo "$CHART_SOURCE" \
   --namespace "$NAMESPACE" \
