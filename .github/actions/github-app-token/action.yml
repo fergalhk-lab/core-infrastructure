@@ -34,7 +34,9 @@ runs:
         echo "app_id=$(echo "$SECRET" | jq -r '.app_id')" >> "$GITHUB_OUTPUT"
 
         PRIVATE_KEY=$(echo "$SECRET" | jq -r '.private_key')
-        echo "::add-mask::$PRIVATE_KEY"
+        while IFS= read -r line; do
+          echo "::add-mask::$line"
+        done <<< "$PRIVATE_KEY"
         {
           echo "private_key<<EOF"
           echo "$PRIVATE_KEY"
