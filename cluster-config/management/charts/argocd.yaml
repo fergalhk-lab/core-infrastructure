@@ -1,0 +1,74 @@
+name: argocd
+namespace: argocd
+chart:
+  source: https://argoproj.github.io/argo-helm
+  name: argo-cd
+  version: 9.4.3
+values:
+  global:
+    domain: argocd.management.fergal.website
+
+  configs:
+    params:
+      server.insecure: true # TLS terminated at ingress
+
+  controller:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        memory: 128Mi
+
+  dex:
+    resources:
+      requests:
+        cpu: 5m
+        memory: 64Mi
+      limits:
+        memory: 64Mi
+
+  redis:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        memory: 64Mi
+
+  server:
+    resources:
+      requests:
+        cpu: 20m
+        memory: 64Mi
+      limits:
+        memory: 64Mi
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      hostname: argocd.management.fergal.website
+      tls: true
+
+  repoServer:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        memory: 128Mi
+
+  applicationSet:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        memory: 32Mi
+
+  notifications:
+    resources:
+      requests:
+        cpu: 5m
+        memory: 32Mi
+      limits:
+        memory: 32Mi
