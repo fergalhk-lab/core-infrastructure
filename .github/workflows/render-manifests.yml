@@ -74,9 +74,14 @@ jobs:
           path: staged/
 
   diff:
-    needs: render
+    needs: [generate-matrix, render]
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    name: diff (${{ matrix.cluster }}/${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
 
@@ -93,31 +98,22 @@ jobs:
           path: manifests-repo
           token: ${{ steps.app-token.outputs.token }}
 
-      - name: Download all rendered manifests
+      - name: Download rendered manifest
         uses: actions/download-artifact@v4
         with:
-          pattern: manifest-*
-          merge-multiple: true
+          name: manifest-${{ matrix.cluster }}-${{ matrix.name }}
           path: rendered
 
-      - name: Diff manifests
+      - name: Diff manifest
         run: |
-          while IFS= read -r f; do
-            cluster=$(echo "$f" | cut -d/ -f2)
-            name=$(echo "$f" | cut -d/ -f3)
-            current="manifests-repo/$cluster/$name/manifest.yaml"
-            {
-              echo "## \`$cluster/$name\`"
-              echo '```diff'
-              if [[ -f "$current" ]]; then
-                diff -u "$current" "$f" || true
-              else
-                echo "(new chart — no existing manifest)"
-                cat "$f"
-              fi
-              echo '```'
-            }
-          done < <(find rendered -name 'manifest.yaml' | sort)
+          current="manifests-repo/${{ matrix.cluster }}/${{ matrix.name }}/manifest.yaml"
+          rendered="rendered/${{ matrix.cluster }}/${{ matrix.name }}/manifest.yaml"
+          if [[ -f "$current" ]]; then
+            diff -u "$current" "$rendered" || true
+          else
+            echo "(new chart — no existing manifest)"
+            cat "$rendered"
+          fi
 
   push-manifests:
     needs: [generate-matrix, render]
