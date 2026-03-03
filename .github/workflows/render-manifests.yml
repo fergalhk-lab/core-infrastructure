@@ -74,6 +74,8 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
       - name: Get GitHub App token
         id: app-token
         uses: ./.github/actions/github-app-token
@@ -118,6 +120,8 @@ jobs:
     if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
       - name: Get GitHub App token
         id: app-token
         uses: ./.github/actions/github-app-token
