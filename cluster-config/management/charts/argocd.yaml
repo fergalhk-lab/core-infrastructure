@@ -1,0 +1,9 @@
+name: argocd
+namespace: argocd
+chart:
+  source: https://argoproj.github.io/argo-helm
+  name: argo-cd
+  version: 9.4.3
+values:
+  global:
+    domain: argocd.fergal.website
