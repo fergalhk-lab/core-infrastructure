@@ -11,6 +11,10 @@ permissions:
   id-token: write
   pull-requests: write
 
+concurrency:
+  group: push-manifests
+  cancel-in-progress: false
+
 jobs:
   generate-matrix:
     runs-on: ubuntu-latest
@@ -112,7 +116,7 @@ jobs:
                 cat "$f"
               fi
               echo '```'
-            } >> "$GITHUB_STEP_SUMMARY"
+            }
           done < <(find rendered -name 'manifest.yaml' | sort)
 
   push-manifests:
