@@ -37,7 +37,7 @@ values:
 	assert.Equal(t, "https://charts.example.com", cfg.Chart.Source)
 	assert.Equal(t, "1.2.3", cfg.Chart.Version)
 	assert.Equal(t, "example-chart", cfg.Chart.Name)
-	assert.Equal(t, map[string]any{"replicaCount": 2, "image": map[string]any{"tag": "latest"}}, cfg.Values)
+	assert.Equal(t, map[string]any{"replicaCount": float64(2), "image": map[string]any{"tag": "latest"}}, cfg.Values)
 }
 
 func TestParseConfig_ChartNameFallback(t *testing.T) {

@@ -7,7 +7,7 @@ import (
 	"os/exec"
 
 	"github.com/fergalhk-lab/core-infrastructure/util/render-chart/config"
-	"gopkg.in/yaml.v3"
+	"sigs.k8s.io/yaml"
 )
 
 // Render writes the config values to a temp file and runs helm template.

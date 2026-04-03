@@ -7,22 +7,22 @@ import (
 	"path/filepath"
 	"strings"
 
-	"gopkg.in/yaml.v3"
+	"sigs.k8s.io/yaml"
 )
 
 var ErrFilenameMismatch = errors.New("filename does not match release name")
 
 type Config struct {
-	Name      string         `yaml:"name"`
-	Namespace string         `yaml:"namespace"`
-	Chart     ChartConfig    `yaml:"chart"`
-	Values    map[string]any `yaml:"values"`
+	Name      string         `json:"name"`
+	Namespace string         `json:"namespace"`
+	Chart     ChartConfig    `json:"chart"`
+	Values    map[string]any `json:"values"`
 }
 
 type ChartConfig struct {
-	Source  string `yaml:"source"`
-	Version string `yaml:"version"`
-	Name    string `yaml:"name"`
+	Source  string `json:"source"`
+	Version string `json:"version"`
+	Name    string `json:"name"`
 }
 
 // ChartName returns the chart name, falling back to the release name if not set.
