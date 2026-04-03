@@ -24,6 +24,6 @@ values:
     resources:
       requests:
         cpu: 5m
-        memory: 64Mi
+        memory: 96Mi
       limits:
-        memory: 64Mi
+        memory: 96Mi
