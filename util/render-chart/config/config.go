@@ -13,10 +13,11 @@ import (
 var ErrFilenameMismatch = errors.New("filename does not match release name")
 
 type Config struct {
-	Name      string         `json:"name"`
-	Namespace string         `json:"namespace"`
-	Chart     ChartConfig    `json:"chart"`
-	Values    map[string]any `json:"values"`
+	Name         string           `json:"name"`
+	Namespace    string           `json:"namespace"`
+	Chart        ChartConfig      `json:"chart"`
+	Values       map[string]any   `json:"values"`
+	ExtraObjects []map[string]any `json:"extraObjects"`
 }
 
 type ChartConfig struct {
