@@ -1,0 +1,26 @@
+name: cluster-api-operator
+namespace: capi-operator-system
+chart:
+  source: https://kubernetes-sigs.github.io/cluster-api-operator/
+  name: cluster-api-operator
+  version: 0.26.0
+values:
+  core:
+    cluster-api:
+      namespace: capi-system
+      version: v1.12.4
+
+  bootstrap:
+    kubeadm:
+      namespace: capi-kubeadm-bootstrap-system
+      version: v1.12.4
+
+  controlPlane:
+    kubeadm:
+      namespace: capi-kubeadm-control-plane-system
+      version: v1.12.4
+
+  infrastructure:
+    hetzner:
+      namespace: caph-system
+      version: v1.0.11
