@@ -1,11 +1,11 @@
-package renderer_test
+package config_test
 
 import (
 	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/fergalhk-lab/core-infrastructure/util/render-chart/renderer"
+	"github.com/fergalhk-lab/core-infrastructure/util/render-chart/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -30,7 +30,7 @@ values:
   image:
     tag: latest
 `)
-	cfg, err := renderer.ParseConfig(path)
+	cfg, err := config.ParseConfig(path)
 	require.NoError(t, err)
 	assert.Equal(t, "my-release", cfg.Name)
 	assert.Equal(t, "default", cfg.Namespace)
@@ -48,7 +48,7 @@ chart:
   source: https://charts.example.com
   version: 1.2.3
 `)
-	cfg, err := renderer.ParseConfig(path)
+	cfg, err := config.ParseConfig(path)
 	require.NoError(t, err)
 	assert.Equal(t, "my-release", cfg.ChartName())
 	assert.Empty(t, cfg.Chart.Name)
@@ -63,7 +63,7 @@ chart:
   version: 1.2.3
   name: example-chart
 `)
-	cfg, err := renderer.ParseConfig(path)
+	cfg, err := config.ParseConfig(path)
 	require.NoError(t, err)
 	assert.Nil(t, cfg.Values)
 }
@@ -77,13 +77,13 @@ chart:
   version: 1.2.3
   name: example-chart
 `)
-	_, err := renderer.ParseConfig(path)
+	_, err := config.ParseConfig(path)
 	require.Error(t, err)
-	assert.ErrorIs(t, err, renderer.ErrFilenameMismatch)
+	assert.ErrorIs(t, err, config.ErrFilenameMismatch)
 }
 
 func TestParseConfig_MissingFile(t *testing.T) {
-	_, err := renderer.ParseConfig("/nonexistent/path/foo.yaml")
+	_, err := config.ParseConfig("/nonexistent/path/foo.yaml")
 	require.Error(t, err)
 }
 
@@ -94,7 +94,7 @@ namespace: default
 chart:
   source: https://charts.example.com
 `)
-	_, err := renderer.ParseConfig(path)
+	_, err := config.ParseConfig(path)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "missing required fields")
 }

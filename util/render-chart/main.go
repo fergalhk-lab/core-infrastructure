@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/fergalhk-lab/core-infrastructure/util/render-chart/config"
 	"github.com/fergalhk-lab/core-infrastructure/util/render-chart/renderer"
 )
 
@@ -17,7 +18,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	cfg, err := renderer.ParseConfig(*configPath)
+	cfg, err := config.ParseConfig(*configPath)
 	if err != nil {
 		log.Fatalf("Error: %s", err)
 	}
