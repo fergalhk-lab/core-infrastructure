@@ -36,7 +36,7 @@ data "aws_iam_policy_document" "mimir" {
       "s3:PutObject",
       "s3:DeleteObject",
     ]
-    resources = ["arn:aws:s3:::fergalhk-mimir/*"]
+    resources = ["${data.aws_s3_bucket.mimir.arn}/*"]
   }
 
   statement {
@@ -44,7 +44,7 @@ data "aws_iam_policy_document" "mimir" {
     actions = [
       "s3:ListBucket",
     ]
-    resources = ["arn:aws:s3:::fergalhk-mimir"]
+    resources = [data.aws_s3_bucket.mimir.arn]
   }
 }
 
