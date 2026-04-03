@@ -37,4 +37,5 @@ if [[ -z "$MANIFESTS" ]]; then
   echo "Error: render-chart produced no output for $CONFIG" >&2
   exit 1
 fi
-kubectl apply -n "$NAMESPACE" -f - <<< "$MANIFESTS"
+
+kubectl apply -n "$NAMESPACE" -f - --server-side <<< "$MANIFESTS"
