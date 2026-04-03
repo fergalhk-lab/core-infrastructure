@@ -64,6 +64,17 @@ values:
         version: <latest stable>
 ```
 
+## Hetzner Token Secret
+
+CAPH requires a Kubernetes secret containing the Hetzner API token in the `caph-system` namespace. This is provided via an `ExternalSecret` extraObject, following the same pattern as ArgoCD's GitHub credentials.
+
+- **ClusterSecretStore**: `aws-secrets-manager` (already deployed on the cluster)
+- **AWS Secrets Manager key**: `apikeys/hetzner/management`
+- **Target secret name**: `hetzner` in namespace `caph-system`
+- **Secret key**: `hcloud-token`
+
+This ExternalSecret is added alongside the Provider CRs in the `extraObjects` list.
+
 ## Versions
 
 Specific versions for the operator chart and each provider must be looked up at implementation time:
