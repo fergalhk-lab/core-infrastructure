@@ -98,3 +98,40 @@ chart:
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "missing required fields")
 }
+
+func TestParseConfig_ExtraObjects(t *testing.T) {
+	path := writeConfig(t, "my-release.yaml", `
+name: my-release
+namespace: default
+chart:
+  source: https://charts.example.com
+  version: 1.2.3
+  name: example-chart
+extraObjects:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: my-config
+    data:
+      key: value
+`)
+	cfg, err := config.ParseConfig(path)
+	require.NoError(t, err)
+	require.Len(t, cfg.ExtraObjects, 1)
+	assert.Equal(t, "v1", cfg.ExtraObjects[0]["apiVersion"])
+	assert.Equal(t, "ConfigMap", cfg.ExtraObjects[0]["kind"])
+}
+
+func TestParseConfig_NoExtraObjects(t *testing.T) {
+	path := writeConfig(t, "my-release.yaml", `
+name: my-release
+namespace: default
+chart:
+  source: https://charts.example.com
+  version: 1.2.3
+  name: example-chart
+`)
+	cfg, err := config.ParseConfig(path)
+	require.NoError(t, err)
+	assert.Nil(t, cfg.ExtraObjects)
+}
