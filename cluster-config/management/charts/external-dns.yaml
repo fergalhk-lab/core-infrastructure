@@ -1,0 +1,45 @@
+name: external-dns
+namespace: external-dns
+chart:
+  source: https://kubernetes-sigs.github.io/external-dns/
+  name: external-dns
+  version: 1.15.0
+values:
+  provider:
+    name: cloudflare
+  env:
+    - name: CF_API_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: external-dns-cloudflare-token
+          key: token
+  policy: upsert-only
+  domainFilters:
+    - fergal.website
+  txtOwnerId: management
+  sources:
+    - service
+    - ingress
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      memory: 32Mi
+extraObjects:
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: external-dns-cloudflare-token
+      namespace: external-dns
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: aws-secrets-manager
+        kind: ClusterSecretStore
+      target:
+        name: external-dns-cloudflare-token
+      data:
+        - secretKey: token
+          remoteRef:
+            key: apikeys/cloudflare/external-dns
