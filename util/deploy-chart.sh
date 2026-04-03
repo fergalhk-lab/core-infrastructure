@@ -2,9 +2,12 @@
 
 set -euo pipefail
 
-for cmd in yq kubectl render-chart; do
+for cmd in yq kubectl go; do
   command -v "$cmd" &>/dev/null || { echo "Error: $cmd not found in PATH" >&2; exit 1; }
 done
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+render-chart() { go run "${SCRIPT_DIR}/render-chart" "$@"; }
 
 if [[ $# -ne 1 ]]; then
   echo "Usage: $0 <config.yaml>" >&2
