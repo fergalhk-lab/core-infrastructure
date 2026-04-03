@@ -45,7 +45,7 @@ values:
         memory: 64Mi
     ingress:
       enabled: true
-      ingressClassName: nginx
+      ingressClassName: traefik
       hostname: argocd.management.fergal.website
       tls: true
 
