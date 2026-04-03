@@ -2,6 +2,7 @@ package renderer
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 
@@ -35,7 +36,7 @@ func Render(cfg *config.Config) error {
 		return fmt.Errorf("closing temp file: %w", err)
 	}
 
-	fmt.Fprintf(os.Stderr, ">>> Rendering %s version %s as release %q in namespace %q\n",
+	log.Printf(">>> Rendering %s version %s as release %q in namespace %q",
 		cfg.ChartName(), cfg.Chart.Version, cfg.Name, cfg.Namespace)
 
 	cmd := exec.Command("helm", "template", cfg.Name, cfg.ChartName(),
