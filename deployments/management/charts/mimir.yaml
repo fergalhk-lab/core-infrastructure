@@ -1,0 +1,90 @@
+name: mimir
+namespace: mimir
+chart:
+  source: https://grafana.github.io/helm-charts
+  name: mimir-distributed
+  version: 6.0.6
+values:
+  # Tradeoff: monolithic (singleBinary) mode runs all Mimir roles in a single
+  # process. This is simpler to operate but cannot be scaled horizontally and
+  # has no component-level fault isolation. To migrate to distributed mode later,
+  # see: https://grafana.com/docs/mimir/latest/references/architecture/deployment-modes/
+  singleBinary:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        memory: 512Mi
+    # IRSA wiring: injects AWS credentials via OIDC projected token.
+    # Same pattern as external-secrets. A pod identity webhook would make this
+    # automatic — see the TODO in deployments/management/charts/external-secrets.yaml.
+    extraEnv:
+      - name: AWS_ROLE_ARN
+        value: arn:aws:iam::740994137039:role/k8s-mgmt-mimir-mimir
+      - name: AWS_WEB_IDENTITY_TOKEN_FILE
+        value: /var/run/secrets/eks.amazonaws.com/serviceaccount/token
+    extraVolumes:
+      - name: aws-iam-token
+        projected:
+          sources:
+            - serviceAccountToken:
+                audience: sts.amazonaws.com
+                expirationSeconds: 86400
+                path: token
+    extraVolumeMounts:
+      - name: aws-iam-token
+        mountPath: /var/run/secrets/eks.amazonaws.com/serviceaccount
+        readOnly: true
+
+  # Disable all distributed components — singleBinary handles everything.
+  # Tradeoff: these would be enabled and scaled independently in a distributed
+  # deployment for higher throughput and availability.
+  distributor:
+    replicas: 0
+  ingester:
+    replicas: 0
+  querier:
+    replicas: 0
+  query_frontend:
+    replicas: 0
+  query_scheduler:
+    replicas: 0
+  store_gateway:
+    replicas: 0
+  compactor:
+    replicas: 0
+  ruler:
+    replicas: 0
+  # Tradeoff: Mimir's built-in alertmanager is disabled. Enable it when
+  # alerting rules are needed by setting alertmanager_storage in structuredConfig
+  # and enabling this component.
+  alertmanager:
+    replicas: 0
+
+  mimir:
+    structuredConfig:
+      # Single-tenant mode. To support multiple tenants later, set this to true
+      # and add X-Scope-OrgID headers to the Prometheus remote_write config.
+      multitenancy_enabled: false
+
+      common:
+        storage:
+          backend: s3
+          s3:
+            bucket_name: fergalhk-mimir
+            region: eu-west-1
+            # No credentials configured — the AWS SDK picks them up from
+            # the IRSA env vars injected above.
+
+      # Required for single-replica operation: prevents the ingester ring from
+      # waiting for quorum that will never be satisfied with one replica.
+      ingester:
+        ring:
+          replication_factor: 1
+
+      # Required for single-replica compactor
+      compactor:
+        sharding_ring:
+          wait_stability_min_duration: 0

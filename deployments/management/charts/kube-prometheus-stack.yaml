@@ -1,0 +1,66 @@
+name: kube-prometheus-stack
+namespace: kube-prometheus-stack
+chart:
+  source: https://prometheus-community.github.io/helm-charts
+  name: kube-prometheus-stack
+  version: 82.17.0
+values:
+  # Grafana is out of scope for this iteration.
+  # Add a separate grafana chart config when visualization is needed.
+  grafana:
+    enabled: false
+
+  # AlertManager disabled — Mimir's built-in alertmanager will be used when
+  # alerting is configured. Tradeoff: no alerting in this iteration.
+  alertmanager:
+    enabled: false
+
+  prometheus:
+    prometheusSpec:
+      # Tradeoff: agent mode — Prometheus only scrapes and remote-writes.
+      # No local TSDB means no local querying. If Mimir is unavailable,
+      # in-flight samples are buffered in the WAL then dropped.
+      # For production alerting workloads, consider a short local retention
+      # period instead (remove enableFeatures and configure storageSpec with a PVC).
+      enableFeatures:
+        - agent
+
+      # No PVC needed in agent mode — WAL uses ephemeral container storage.
+      storageSpec: {}
+
+      remoteWrite:
+        - url: http://mimir-nginx.mimir.svc/api/v1/push
+
+      resources:
+        requests:
+          cpu: 50m
+          memory: 256Mi
+        limits:
+          memory: 512Mi
+
+  # kube-state-metrics and node-exporter are enabled by default.
+  # The chart creates ServiceMonitors for both automatically.
+  kube-state-metrics:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        memory: 64Mi
+
+  # prometheus-node-exporter is the sub-chart name; resources go here, not under nodeExporter:
+  prometheus-node-exporter:
+    resources:
+      requests:
+        cpu: 5m
+        memory: 32Mi
+      limits:
+        memory: 32Mi
+
+  prometheusOperator:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        memory: 64Mi
