@@ -13,7 +13,7 @@ values:
         secretKeyRef:
           name: external-dns-cloudflare-token
           key: token
-  policy: upsert-only
+  policy: sync
   domainFilters:
     - fergal.website
   txtOwnerId: management
