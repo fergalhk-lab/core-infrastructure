@@ -38,4 +38,4 @@ if [[ -z "$MANIFESTS" ]]; then
   exit 1
 fi
 
-kubectl apply -n "$NAMESPACE" -f - --server-side <<< "$MANIFESTS"
+kubectl apply -f - --server-side <<< "$MANIFESTS"
