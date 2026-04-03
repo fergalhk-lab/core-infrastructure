@@ -42,4 +42,4 @@ extraObjects:
       data:
         - secretKey: token
           remoteRef:
-            key: apikeys/cloudflare/external-dns
+            key: apikeys/cloudflare/main
