@@ -46,6 +46,10 @@ func ParseConfig(path string) (*Config, error) {
 		return nil, fmt.Errorf("parsing config: %w", err)
 	}
 
+	if cfg.Name == "" || cfg.Namespace == "" || cfg.Chart.Source == "" || cfg.Chart.Version == "" {
+		return nil, fmt.Errorf("config missing required fields: name, namespace, chart.source, and chart.version must all be set")
+	}
+
 	filename := strings.TrimSuffix(filepath.Base(path), ".yaml")
 	if filename != cfg.Name {
 		return nil, fmt.Errorf("%w: got %q, expected %q", ErrFilenameMismatch, filename, cfg.Name)
@@ -72,7 +76,6 @@ func Render(cfg *Config) error {
 		return fmt.Errorf("creating temp file: %w", createErr)
 	}
 	defer os.Remove(tmp.Name())
-	defer tmp.Close()
 
 	if _, err := tmp.Write(valuesYAML); err != nil {
 		return fmt.Errorf("writing values: %w", err)

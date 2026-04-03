@@ -51,6 +51,7 @@ chart:
 	cfg, err := renderer.ParseConfig(path)
 	require.NoError(t, err)
 	assert.Equal(t, "my-release", cfg.ChartName())
+	assert.Empty(t, cfg.Chart.Name)
 }
 
 func TestParseConfig_NoValues(t *testing.T) {
@@ -84,4 +85,16 @@ chart:
 func TestParseConfig_MissingFile(t *testing.T) {
 	_, err := renderer.ParseConfig("/nonexistent/path/foo.yaml")
 	require.Error(t, err)
+}
+
+func TestParseConfig_MissingRequiredFields(t *testing.T) {
+	path := writeConfig(t, "my-release.yaml", `
+name: my-release
+namespace: default
+chart:
+  source: https://charts.example.com
+`)
+	_, err := renderer.ParseConfig(path)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "missing required fields")
 }
