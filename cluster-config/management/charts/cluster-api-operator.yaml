@@ -24,24 +24,3 @@ values:
     hetzner:
       namespace: caph-system
       version: v1.0.11
-
-extraObjects:
-  - apiVersion: external-secrets.io/v1beta1
-    kind: ExternalSecret
-    metadata:
-      name: hetzner-token
-      namespace: caph-system
-    spec:
-      refreshInterval: 1h
-      secretStoreRef:
-        name: aws-secrets-manager
-        kind: ClusterSecretStore
-      target:
-        name: hetzner
-        template:
-          data:
-            hcloud-token: "{{ .hcloud_token }}"
-      data:
-        - secretKey: hcloud_token
-          remoteRef:
-            key: apikeys/hetzner/management

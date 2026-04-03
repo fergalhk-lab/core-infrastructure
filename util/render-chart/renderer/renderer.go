@@ -10,8 +10,7 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-// Render writes the config values to a temp file, runs helm template, then
-// appends any top-level extraObjects as additional YAML documents.
+// Render writes the config values to a temp file and runs helm template.
 func Render(cfg *config.Config) error {
 	var valuesYAML []byte
 	if cfg.Values == nil {
@@ -52,19 +51,5 @@ func Render(cfg *config.Config) error {
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("helm template: %w", err)
 	}
-
-	for _, obj := range cfg.ExtraObjects {
-		data, err := yaml.Marshal(obj)
-		if err != nil {
-			return fmt.Errorf("marshaling extra object: %w", err)
-		}
-		if _, err := fmt.Fprint(os.Stdout, "---\n"); err != nil {
-			return fmt.Errorf("writing extra object separator: %w", err)
-		}
-		if _, err := os.Stdout.Write(data); err != nil {
-			return fmt.Errorf("writing extra object: %w", err)
-		}
-	}
-
 	return nil
 }
