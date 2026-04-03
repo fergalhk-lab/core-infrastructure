@@ -6,6 +6,7 @@ require (
 	github.com/hetznercloud/hcloud-go/v2 v2.36.0
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/mock v0.6.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -23,5 +24,4 @@ require (
 	golang.org/x/sys v0.40.0 // indirect
 	golang.org/x/text v0.33.0 // indirect
 	google.golang.org/protobuf v1.36.8 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
