@@ -27,20 +27,6 @@
 
   Visit https://github.com/syself/cluster-api-provider-hetzner/releases and note the latest stable release tag (e.g. `v1.1.0`). This version is used for `InfrastructureProvider`. Keep the `v` prefix.
 
-- [ ] **Step 4: Check the Hetzner token secret structure in AWS Secrets Manager**
-
-  Run:
-  ```bash
-  aws secretsmanager get-secret-value \
-    --secret-id apikeys/hetzner/management \
-    --query 'SecretString' \
-    --output text
-  ```
-  Note whether the output is:
-  - **Option A** — a raw token string (e.g. `AbCdEf123456...`): the ExternalSecret `remoteRef` will have no `property` field.
-  - **Option B** — a JSON object (e.g. `{"token": "AbCdEf..."}`): the ExternalSecret `remoteRef` will use `property: token` (or whatever key holds the token).
-
-  Record which option applies.
 
 ---
 
@@ -53,7 +39,6 @@
 
   Create `cluster-config/management/charts/cluster-api-operator.yaml` with the content below. Fill in the version placeholders from Task 1.
 
-  **If Option A (raw token secret):**
   ```yaml
   name: cluster-api-operator
   namespace: capi-operator-system
@@ -82,6 +67,7 @@
             - secretKey: hcloud_token
               remoteRef:
                 key: apikeys/hetzner/management
+                # no property field — secret is a flat token string
 
       - apiVersion: operator.cluster.x-k8s.io/v1alpha2
         kind: CoreProvider
@@ -115,16 +101,6 @@
         spec:
           version: <CAPH_VERSION>   # e.g. v1.1.0 — keep leading v
   ```
-
-  **If Option B (JSON token secret)**, change the ExternalSecret `data` block to:
-  ```yaml
-          data:
-            - secretKey: hcloud_token
-              remoteRef:
-                key: apikeys/hetzner/management
-                property: token   # adjust key name if different
-  ```
-  Everything else remains the same.
 
 ---
 
