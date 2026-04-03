@@ -6,6 +6,7 @@ require (
 	github.com/hetznercloud/hcloud-go/v2 v2.36.0
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/mock v0.6.0
+	sigs.k8s.io/yaml v1.6.0
 )
 
 require (
