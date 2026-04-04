@@ -2,8 +2,8 @@
 
 set -eEuo pipefail
 
-if [ $# -ne 4 ]; then
-    echo "Usage: ${0} PUBLIC_HOSTNAME PUBLIC_ISSUER_HOSTNAME ECR_ROLE_ARN STORAGE_VOLUME_ID" >&2
+if [ $# -ne 3 ]; then
+    echo "Usage: ${0} PUBLIC_HOSTNAME PUBLIC_ISSUER_HOSTNAME ECR_ROLE_ARN" >&2
     exit 1
 fi
 
@@ -11,16 +11,6 @@ K3S_HOSTNAME="${1}"
 K3S_API_PORT=6443
 PUBLIC_ISSUER_HOSTNAME="${2}"
 ECR_ROLE_ARN="${3}"
-STORAGE_VOLUME_ID="${4}"
-
-if [[ ! "${STORAGE_VOLUME_ID}" =~ ^[0-9]+$ ]]; then
-    echo "STORAGE_VOLUME_ID must be numeric, got: ${STORAGE_VOLUME_ID}" >&2
-    exit 1
-fi
-
-STORAGE_DEVICE="/dev/disk/by-id/scsi-0HC_Volume_${STORAGE_VOLUME_ID}"
-STORAGE_MOUNT="/mnt/k3s-data"
-MOUNT_UNIT="$(systemd-escape --path "${STORAGE_MOUNT}").mount"
 
 echo "Writing ECR credential provider config" >&2
 mkdir -p /var/lib/rancher/credentialprovider
@@ -43,59 +33,12 @@ providers:
       serviceAccountTokenAudience: sts.amazonaws.com
       requireServiceAccount: true
     env:
-      - name: AWS_ROLE_ARN
+      - name: AWS_ECR_ROLE_ARN
         value: "${ECR_ROLE_ARN}"
       - name: AWS_REGION
         value: "eu-west-1"
 EOF
 )
-
-echo "Waiting for storage volume ${STORAGE_VOLUME_ID} at ${STORAGE_DEVICE}" >&2
-for _ in $(seq 1 90); do
-    [ -b "${STORAGE_DEVICE}" ] && break
-    sleep 2
-done
-if ! [ -b "${STORAGE_DEVICE}" ]; then
-    echo "Storage volume ${STORAGE_VOLUME_ID} never appeared at ${STORAGE_DEVICE}" >&2
-    exit 1
-fi
-
-mkdir -p "${STORAGE_MOUNT}"
-
-cat > "/etc/systemd/system/${MOUNT_UNIT}" <<UNIT
-[Unit]
-Description=Mount k3s storage volume at ${STORAGE_MOUNT}
-Before=k3s.service
-
-[Mount]
-What=${STORAGE_DEVICE}
-Where=${STORAGE_MOUNT}
-# Type must match format=ext4 set on hcloud_volume in Terraform
-Type=ext4
-Options=defaults,noatime
-
-[Install]
-WantedBy=multi-user.target
-UNIT
-
-systemctl daemon-reload
-systemctl enable --now "${MOUNT_UNIT}"
-echo "Mounted volume ${STORAGE_VOLUME_ID} at ${STORAGE_MOUNT}" >&2
-
-mkdir -p "${STORAGE_MOUNT}/server" "${STORAGE_MOUNT}/storage"
-
-mkdir -p /var/lib/rancher/k3s/server
-ln -sfn "${STORAGE_MOUNT}/server"  /var/lib/rancher/k3s/server
-ln -sfn "${STORAGE_MOUNT}/storage" /var/lib/rancher/k3s/storage
-
-echo "Writing k3s volume mount drop-in" >&2
-mkdir -p /etc/systemd/system/k3s.service.d
-cat > /etc/systemd/system/k3s.service.d/volumes.conf <<DROPIN
-[Unit]
-After=${MOUNT_UNIT}
-Requires=${MOUNT_UNIT}
-DROPIN
-systemctl daemon-reload
 
 export INSTALL_K3S_SKIP_DOWNLOAD=true
 

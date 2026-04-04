@@ -4,10 +4,6 @@ locals {
     image_version = "20260404231544"
     size          = "cx33" // 4vCPU / 8 GiB memory
     location      = "nbg1" // Nuremberg
-    data_volume = {
-      size   = 25
-      format = "ext4" // note - this needs to match the mount unit for the volume
-    }
     apiserver_endpoint = {
       zone      = "fergal.website"
       subdomain = "k8s.management"
@@ -22,7 +18,6 @@ locals {
     "${local.management_k8s.apiserver_endpoint.subdomain}.${local.management_k8s.apiserver_endpoint.zone}",
     "${local.management_k8s.anonymous_issuer_endpoint.subdomain}.${local.management_k8s.anonymous_issuer_endpoint.zone}",
     aws_iam_role.ecr_pull.arn,
-    hcloud_volume.management_k8s.id,
   ])
 }
 
@@ -32,10 +27,7 @@ resource "hcloud_server" "management_k8s" {
   server_type = local.management_k8s.size
   location    = local.management_k8s.location
   ssh_keys    = [for ssh_key in hcloud_ssh_key.management : ssh_key.id]
-  # user_data is applied at first boot only. If the server is replaced by Terraform,
-  # the volume ID embedded here will reflect the current volume (correct).
-  # A volume destroy+recreate would require a server rebuild anyway.
-  user_data = <<EOD
+  user_data   = <<EOD
 #cloud-config
 runcmd:
   - /root/bootstrap-k3s.sh ${local.bootstrap_k3s_args}
