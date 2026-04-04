@@ -82,11 +82,10 @@ systemctl daemon-reload
 systemctl enable --now "${MOUNT_UNIT}"
 echo "Mounted volume ${STORAGE_VOLUME_ID} at ${STORAGE_MOUNT}" >&2
 
-mkdir -p "${STORAGE_MOUNT}/db" "${STORAGE_MOUNT}/tls" "${STORAGE_MOUNT}/storage"
+mkdir -p "${STORAGE_MOUNT}/server" "${STORAGE_MOUNT}/storage"
 
 mkdir -p /var/lib/rancher/k3s/server
-ln -sfn "${STORAGE_MOUNT}/db"      /var/lib/rancher/k3s/server/db
-ln -sfn "${STORAGE_MOUNT}/tls"     /var/lib/rancher/k3s/server/tls
+ln -sfn "${STORAGE_MOUNT}/server"  /var/lib/rancher/k3s/server
 ln -sfn "${STORAGE_MOUNT}/storage" /var/lib/rancher/k3s/storage
 
 echo "Writing k3s volume mount drop-in" >&2
