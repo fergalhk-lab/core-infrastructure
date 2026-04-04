@@ -51,7 +51,7 @@ What=${device}
 Where=${mount_point}
 # Type must match format=ext4 set on hcloud_volume in Terraform
 Type=ext4
-Options=defaults
+Options=defaults,noatime
 
 [Install]
 WantedBy=multi-user.target
