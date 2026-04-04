@@ -74,6 +74,11 @@ values:
 
   mimir:
     structuredConfig:
+      # Disable the Kafka-based ingest storage path — enabled by default in
+      # chart 6.x but not needed for monolithic mode with S3 backend.
+      ingest_storage:
+        enabled: false
+
       # Single-tenant mode. To support multiple tenants later, set this to true
       # and add X-Scope-OrgID headers to the Prometheus remote_write config.
       multitenancy_enabled: false
