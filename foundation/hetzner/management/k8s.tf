@@ -1,7 +1,7 @@
 locals {
   management_k8s = {
     name          = "management-k8s"
-    image_version = "20260404203152"
+    image_version = "20260404211133"
     size          = "cx33" // 4vCPU / 8 GiB memory
     location      = "nbg1" // Nuremberg
     apiserver_endpoint = {
@@ -31,7 +31,7 @@ resource "hcloud_server" "management_k8s" {
   # user_data is applied at first boot only. If the server is replaced by Terraform,
   # the volume ID embedded here will reflect the current volume (correct).
   # A volume destroy+recreate would require a server rebuild anyway.
-  user_data   = <<EOD
+  user_data = <<EOD
 #cloud-config
 runcmd:
   - /root/bootstrap-k3s.sh ${local.bootstrap_k3s_args}
