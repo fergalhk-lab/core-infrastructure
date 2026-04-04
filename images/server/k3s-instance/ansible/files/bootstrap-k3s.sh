@@ -36,7 +36,7 @@ kind: CredentialProviderConfig
 providers:
   - name: ecr-credential-provider
     matchImages:
-      - "${AWS_ACCOUNT_ID}.dkr.ecr.*.amazonaws.com/*"
+      - "${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-1.amazonaws.com"
     defaultCacheDuration: "12h"
     apiVersion: credentialprovider.kubelet.k8s.io/v1
     tokenAttributes:
