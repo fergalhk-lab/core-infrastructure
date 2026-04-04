@@ -44,6 +44,7 @@ func Render(cfg *config.Config) error {
 		"--repo", cfg.Chart.Source,
 		"--namespace", cfg.Namespace,
 		"--version", cfg.Chart.Version,
+		"--include-crds",
 		"--values", tmp.Name(),
 	)
 	cmd.Stdout = os.Stdout
