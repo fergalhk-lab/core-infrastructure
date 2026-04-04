@@ -1,3 +1,5 @@
+# TODO: extract billsplit resources into their own Terraform module
+
 module "billsplit_role" {
   source = "./modules/pod-role"
 
