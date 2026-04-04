@@ -10,33 +10,30 @@ values:
   grafana:
     enabled: false
 
-  # AlertManager disabled — Mimir's built-in alertmanager will be used when
-  # alerting is configured. Tradeoff: no alerting in this iteration.
+  # AlertManager disabled — no alerting configured yet.
   alertmanager:
     enabled: false
 
   prometheus:
     prometheusSpec:
-      # Tradeoff: agent mode — Prometheus only scrapes and remote-writes.
-      # No local TSDB means no local querying. If Mimir is unavailable,
-      # in-flight samples are buffered in the WAL then dropped.
-      # For production alerting workloads, consider a short local retention
-      # period instead (remove enableFeatures and configure storageSpec with a PVC).
-      enableFeatures:
-        - agent
+      retention: 7d
 
-      # No PVC needed in agent mode — WAL uses ephemeral container storage.
-      storageSpec: {}
-
-      remoteWrite:
-        - url: http://mimir-gateway.mimir.svc/api/v1/push
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: local-path
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 20Gi
 
       resources:
         requests:
           cpu: 50m
           memory: 256Mi
         limits:
-          memory: 512Mi
+          memory: 256Mi
 
   # kube-state-metrics and node-exporter are enabled by default.
   # The chart creates ServiceMonitors for both automatically.
