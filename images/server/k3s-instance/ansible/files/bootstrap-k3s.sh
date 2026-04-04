@@ -2,8 +2,8 @@
 
 set -eEuo pipefail
 
-if [ $# -ne 3 ]; then
-    echo "Usage: ${0} PUBLIC_HOSTNAME PUBLIC_ISSUER_HOSTNAME ECR_ROLE_ARN" >&2
+if [ $# -ne 6 ]; then
+    echo "Usage: ${0} PUBLIC_HOSTNAME PUBLIC_ISSUER_HOSTNAME ECR_ROLE_ARN ETCD_VOLUME_ID TLS_VOLUME_ID PVS_VOLUME_ID" >&2
     exit 1
 fi
 
@@ -11,6 +11,55 @@ K3S_HOSTNAME="${1}"
 K3S_API_PORT=6443
 PUBLIC_ISSUER_HOSTNAME="${2}"
 ECR_ROLE_ARN="${3}"
+ETCD_VOLUME_ID="${4}"
+TLS_VOLUME_ID="${5}"
+PVS_VOLUME_ID="${6}"
+
+VOLUMES=(
+    "${ETCD_VOLUME_ID}:/var/lib/rancher/k3s/server/db"
+    "${TLS_VOLUME_ID}:/var/lib/rancher/k3s/server/tls"
+    "${PVS_VOLUME_ID}:/var/lib/rancher/k3s/storage"
+)
+
+mount_k3s_volume() {
+    local volume_id="${1}"
+    local mount_point="${2}"
+    local device="/dev/disk/by-id/scsi-0HC_Volume_${volume_id}"
+
+    echo "Waiting for volume ${volume_id} at ${device}" >&2
+    for _ in $(seq 1 30); do
+        [ -b "${device}" ] && break
+        sleep 2
+    done
+    if ! [ -b "${device}" ]; then
+        echo "Volume ${volume_id} never appeared at ${device}" >&2
+        exit 1
+    fi
+
+    mkdir -p "${mount_point}"
+
+    local unit_name
+    unit_name="$(systemd-escape --path "${mount_point}").mount"
+
+    cat > "/etc/systemd/system/${unit_name}" <<UNIT
+[Unit]
+Description=Mount k3s volume at ${mount_point}
+Before=k3s.service
+
+[Mount]
+What=${device}
+Where=${mount_point}
+Type=ext4
+Options=defaults
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+    systemctl daemon-reload
+    systemctl enable --now "${unit_name}"
+    echo "Mounted ${device} at ${mount_point}" >&2
+}
 
 echo "Writing ECR credential provider config" >&2
 mkdir -p /var/lib/rancher/credentialprovider
@@ -39,6 +88,13 @@ providers:
         value: "eu-west-1"
 EOF
 
+echo "Mounting k3s volumes" >&2
+for vol_spec in "${VOLUMES[@]}"; do
+    volume_id="${vol_spec%%:*}"
+    mount_point="${vol_spec##*:}"
+    mount_k3s_volume "${volume_id}" "${mount_point}"
+done
+
 export INSTALL_K3S_SKIP_DOWNLOAD=true
 
 echo "Using hostname ${K3S_HOSTNAME} as SAN" >&2
@@ -56,10 +112,19 @@ curl -sfL https://get.k3s.io | sh -s - \
     --kubelet-arg="image-credential-provider-config=/var/lib/rancher/credentialprovider/config.yaml" \
     --kubelet-arg="image-credential-provider-bin-dir=/var/lib/rancher/credentialprovider/bin"
 
+echo "Writing k3s volume mount drop-in" >&2
+mkdir -p /etc/systemd/system/k3s.service.d
+cat > /etc/systemd/system/k3s.service.d/volumes.conf <<DROPIN
+[Unit]
+After=var-lib-rancher-k3s-server-db.mount var-lib-rancher-k3s-server-tls.mount var-lib-rancher-k3s-storage.mount
+Requires=var-lib-rancher-k3s-server-db.mount var-lib-rancher-k3s-server-tls.mount var-lib-rancher-k3s-storage.mount
+DROPIN
+systemctl daemon-reload
+
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
 for _ in $(seq 1 20); do
-    if kubectl get IngressRoute >/dev/null 2>&1;then
+    if kubectl get IngressRoute >/dev/null 2>&1; then
         echo "API server is ready" >&2
         touch /tmp/k8s-ready
         break
@@ -76,4 +141,3 @@ fi
 
 echo "Enabling anonymous access to OIDC discovery endpoints" >&2
 sed "s|ISSUER_HOSTNAME|${PUBLIC_ISSUER_HOSTNAME}|g" /root/oidc-anonymous-access.yaml | kubectl apply -f -
-
