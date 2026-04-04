@@ -13,18 +13,24 @@ PUBLIC_ISSUER_HOSTNAME="${2}"
 ECR_ROLE_ARN="${3}"
 STORAGE_VOLUME_ID="${4}"
 
+if [[ ! "${STORAGE_VOLUME_ID}" =~ ^[0-9]+$ ]]; then
+    echo "STORAGE_VOLUME_ID must be numeric, got: ${STORAGE_VOLUME_ID}" >&2
+    exit 1
+fi
+
 STORAGE_DEVICE="/dev/disk/by-id/scsi-0HC_Volume_${STORAGE_VOLUME_ID}"
 STORAGE_MOUNT="/mnt/k3s-data"
 MOUNT_UNIT="$(systemd-escape --path "${STORAGE_MOUNT}").mount"
 
 echo "Writing ECR credential provider config" >&2
 mkdir -p /var/lib/rancher/credentialprovider
-install -m 0600 /dev/null /var/lib/rancher/credentialprovider/config.yaml
 
 # Extract account ID from role ARN (arn:aws:iam::<account-id>:role/...)
 AWS_ACCOUNT_ID=$(echo "${ECR_ROLE_ARN}" | cut -d: -f5)
 
-cat > /var/lib/rancher/credentialprovider/config.yaml <<EOF
+(
+    umask 0177
+    cat > /var/lib/rancher/credentialprovider/config.yaml <<EOF
 apiVersion: kubelet.config.k8s.io/v1
 kind: CredentialProviderConfig
 providers:
@@ -43,6 +49,7 @@ providers:
       - name: AWS_REGION
         value: "eu-west-1"
 EOF
+)
 
 echo "Waiting for storage volume ${STORAGE_VOLUME_ID} at ${STORAGE_DEVICE}" >&2
 for _ in $(seq 1 30); do
@@ -83,6 +90,15 @@ ln -sfn "${STORAGE_MOUNT}/db"      /var/lib/rancher/k3s/server/db
 ln -sfn "${STORAGE_MOUNT}/tls"     /var/lib/rancher/k3s/server/tls
 ln -sfn "${STORAGE_MOUNT}/storage" /var/lib/rancher/k3s/storage
 
+echo "Writing k3s volume mount drop-in" >&2
+mkdir -p /etc/systemd/system/k3s.service.d
+cat > /etc/systemd/system/k3s.service.d/volumes.conf <<DROPIN
+[Unit]
+After=${MOUNT_UNIT}
+Requires=${MOUNT_UNIT}
+DROPIN
+systemctl daemon-reload
+
 export INSTALL_K3S_SKIP_DOWNLOAD=true
 
 echo "Using hostname ${K3S_HOSTNAME} as SAN" >&2
@@ -99,15 +115,6 @@ curl -sfL https://get.k3s.io | sh -s - \
     --kube-apiserver-arg="anonymous-auth=true" \
     --kubelet-arg="image-credential-provider-config=/var/lib/rancher/credentialprovider/config.yaml" \
     --kubelet-arg="image-credential-provider-bin-dir=/var/lib/rancher/credentialprovider/bin"
-
-echo "Writing k3s volume mount drop-in" >&2
-mkdir -p /etc/systemd/system/k3s.service.d
-cat > /etc/systemd/system/k3s.service.d/volumes.conf <<DROPIN
-[Unit]
-After=${MOUNT_UNIT}
-Requires=${MOUNT_UNIT}
-DROPIN
-systemctl daemon-reload
 
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
