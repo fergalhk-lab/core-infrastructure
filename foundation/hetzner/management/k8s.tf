@@ -16,15 +16,16 @@ locals {
 }
 
 resource "hcloud_server" "management_k8s" {
-  name        = local.management_k8s.name
-  image       = data.hcloud_image.management_k8s_snapshot.id
-  server_type = local.management_k8s.size
-  location    = local.management_k8s.location
-  ssh_keys    = [for ssh_key in hcloud_ssh_key.management : ssh_key.id]
-  user_data   = <<EOD
+  name              = local.management_k8s.name
+  image             = data.hcloud_image.management_k8s_snapshot.id
+  server_type       = local.management_k8s.size
+  location          = local.management_k8s.location
+  primary_disk_size = 10
+  ssh_keys          = [for ssh_key in hcloud_ssh_key.management : ssh_key.id]
+  user_data         = <<EOD
 #cloud-config
 runcmd:
-  - /root/bootstrap-k3s.sh '${local.management_k8s.apiserver_endpoint.subdomain}.${local.management_k8s.apiserver_endpoint.zone}' '${local.management_k8s.anonymous_issuer_endpoint.subdomain}.${local.management_k8s.anonymous_issuer_endpoint.zone}' '${aws_iam_role.ecr_pull.arn}'
+  - /root/bootstrap-k3s.sh '${local.management_k8s.apiserver_endpoint.subdomain}.${local.management_k8s.apiserver_endpoint.zone}' '${local.management_k8s.anonymous_issuer_endpoint.subdomain}.${local.management_k8s.anonymous_issuer_endpoint.zone}' '${aws_iam_role.ecr_pull.arn}' '${hcloud_volume.management_k8s["etcd"].id}' '${hcloud_volume.management_k8s["tls"].id}' '${hcloud_volume.management_k8s["pvs"].id}'
 EOD
 
   network {
