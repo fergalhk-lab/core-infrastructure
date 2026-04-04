@@ -21,3 +21,23 @@ resource "aws_s3_bucket_public_access_block" "billsplit_live" {
   ignore_public_acls      = true
   restrict_public_buckets = true
 }
+
+resource "aws_iam_role_policy" "billsplit_s3" {
+  name = "billsplit-s3"
+  role = module.billsplit_role.role_name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:GetObject",
+        ]
+        Resource = "${aws_s3_bucket.billsplit_live.arn}/*"
+      }
+    ]
+  })
+}
