@@ -33,7 +33,7 @@ mount_k3s_volume() {
     done
     if ! [ -b "${device}" ]; then
         echo "Volume ${volume_id} never appeared at ${device}" >&2
-        exit 1  # exits the whole script (set -e propagates through functions)
+        exit 1  # exits the entire script (bash exit always exits the process)
     fi
 
     mkdir -p "${mount_point}"
@@ -49,7 +49,8 @@ Before=k3s.service
 [Mount]
 What=${device}
 Where=${mount_point}
-Type=ext4  # matches format=ext4 set on hcloud_volume in Terraform
+# Type must match format=ext4 set on hcloud_volume in Terraform
+Type=ext4
 Options=defaults
 
 [Install]
@@ -118,6 +119,8 @@ curl -sfL https://get.k3s.io | sh -s - \
     --kubelet-arg="image-credential-provider-config=/var/lib/rancher/credentialprovider/config.yaml" \
     --kubelet-arg="image-credential-provider-bin-dir=/var/lib/rancher/credentialprovider/bin"
 
+# This drop-in only takes effect on subsequent boots; on first boot the volumes
+# are already mounted before k3s starts.
 echo "Writing k3s volume mount drop-in" >&2
 mkdir -p /etc/systemd/system/k3s.service.d
 cat > /etc/systemd/system/k3s.service.d/volumes.conf <<DROPIN

@@ -44,7 +44,10 @@ EOD
     network_id = hcloud_network.management.id
   }
 
-  depends_on = [hcloud_network_subnet.management]
+  depends_on = [
+    hcloud_network_subnet.management,
+    hcloud_volume_attachment.management_k8s,
+  ]
 }
 
 module "management_k8s_apiserver_dns" {

@@ -1,8 +1,8 @@
 locals {
   management_k8s_volumes = {
-    etcd = { size = 3  }
-    tls  = { size = 1  }
-    pvs  = { size = 25 }
+    etcd = { size = 3  } # generous for single-node embedded etcd
+    tls  = { size = 1  } # cluster CA and TLS certs are small
+    pvs  = { size = 25 } # local-path-provisioner PV storage
   }
 }
 
