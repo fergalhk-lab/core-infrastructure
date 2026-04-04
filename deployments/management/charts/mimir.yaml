@@ -9,6 +9,11 @@ values:
   minio:
     enabled: false
 
+  # Kafka is bundled for the experimental ingest storage write path — not needed
+  # for monolithic mode with S3 backend.
+  kafka:
+    enabled: false
+
   # Tradeoff: monolithic (singleBinary) mode runs all Mimir roles in a single
   # process. This is simpler to operate but cannot be scaled horizontally and
   # has no component-level fault isolation. To migrate to distributed mode later,
