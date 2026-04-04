@@ -5,5 +5,11 @@
 #   }
 # }
 locals {
-  container_images = {}
+  container_images = {
+    "apps/billsplit" = {
+      github_workflows = [
+        { repo = "fergalhk-lab/apps", branches = ["main"] }
+      ]
+    }
+  }
 }
