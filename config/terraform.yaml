@@ -3,3 +3,4 @@ modules:
   - foundation/aws/platform
   - edge/zones
   - foundation/hetzner/management
+  - foundation/build/container-images
