@@ -29,8 +29,7 @@ resource "hcloud_server" "management_k8s" {
   image             = data.hcloud_image.management_k8s_snapshot.id
   server_type       = local.management_k8s.size
   location          = local.management_k8s.location
-  primary_disk_size = 10 # minimal root disk; persistent data lives on attached volumes
-  ssh_keys          = [for ssh_key in hcloud_ssh_key.management : ssh_key.id]
+ssh_keys          = [for ssh_key in hcloud_ssh_key.management : ssh_key.id]
   # user_data is applied at first boot only. If the server is replaced by Terraform,
   # the volume IDs embedded here will reflect the current volumes (correct).
   # A volume destroy+recreate would require a server rebuild anyway.
