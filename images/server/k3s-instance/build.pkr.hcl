@@ -1,6 +1,6 @@
 locals {
   k3s_version                     = "v1.33.3"
-  ecr_credential_provider_version = "v1.33.0"
+  ecr_credential_provider_version = "v1.31.0"
 }
 
 build {

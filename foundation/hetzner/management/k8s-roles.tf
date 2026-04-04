@@ -72,7 +72,7 @@ data "aws_iam_policy_document" "ecr_pull" {
       "ecr:GetDownloadUrlForLayer",
       "ecr:BatchCheckLayerAvailability",
     ]
-    resources = ["arn:aws:ecr:eu-west-1:740994137039:repository/*"]
+    resources = ["arn:aws:ecr:*:${data.aws_caller_identity.current.account_id}:repository/*"]
   }
 }
 

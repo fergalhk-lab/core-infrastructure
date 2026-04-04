@@ -16,13 +16,16 @@ echo "Writing ECR credential provider config" >&2
 mkdir -p /var/lib/rancher/credentialprovider
 install -m 0600 /dev/null /var/lib/rancher/credentialprovider/config.yaml
 
+# Extract account ID from role ARN (arn:aws:iam::<account-id>:role/...)
+AWS_ACCOUNT_ID=$(echo "${ECR_ROLE_ARN}" | cut -d: -f5)
+
 cat > /var/lib/rancher/credentialprovider/config.yaml <<EOF
 apiVersion: kubelet.config.k8s.io/v1
 kind: CredentialProviderConfig
 providers:
   - name: ecr-credential-provider
     matchImages:
-      - "*.dkr.ecr.*.amazonaws.com"
+      - "${AWS_ACCOUNT_ID}.dkr.ecr.*.amazonaws.com"
     defaultCacheDuration: "12h"
     apiVersion: credentialprovider.kubelet.k8s.io/v1
     tokenAttributes:
