@@ -1,3 +1,7 @@
+locals {
+  aws_account = "platform"
+}
+
 module "authmeta" {
   source        = "../../../common/tfmodules/authmeta"
   enable_github = true
@@ -5,7 +9,7 @@ module "authmeta" {
 
 provider "aws" {
   assume_role {
-    role_arn = module.meta.aws_deploy_role_arns["platform"]
+    role_arn = module.meta.aws_deploy_role_arns[local.aws_account]
   }
 }
 
