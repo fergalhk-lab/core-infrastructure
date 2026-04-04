@@ -113,7 +113,9 @@ curl -sfL https://get.k3s.io | sh -s - \
     --kube-apiserver-arg="api-audiences=sts.amazonaws.com" \
     --kube-apiserver-arg="anonymous-auth=true" \
     --kubelet-arg="image-credential-provider-config=/var/lib/rancher/credentialprovider/config.yaml" \
-    --kubelet-arg="image-credential-provider-bin-dir=/var/lib/rancher/credentialprovider/bin"
+    --kubelet-arg="image-credential-provider-bin-dir=/var/lib/rancher/credentialprovider/bin" \
+    --kubelet-arg="feature-gates=KubeletServiceAccountTokenForCredentialProviders"
+
 
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
