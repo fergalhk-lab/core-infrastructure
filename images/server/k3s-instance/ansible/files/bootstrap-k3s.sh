@@ -33,7 +33,7 @@ mount_k3s_volume() {
     done
     if ! [ -b "${device}" ]; then
         echo "Volume ${volume_id} never appeared at ${device}" >&2
-        exit 1
+        exit 1  # exits the whole script (set -e propagates through functions)
     fi
 
     mkdir -p "${mount_point}"
@@ -49,16 +49,14 @@ Before=k3s.service
 [Mount]
 What=${device}
 Where=${mount_point}
-Type=ext4
+Type=ext4  # matches format=ext4 set on hcloud_volume in Terraform
 Options=defaults
 
 [Install]
 WantedBy=multi-user.target
 UNIT
 
-    systemctl daemon-reload
-    systemctl enable --now "${unit_name}"
-    echo "Mounted ${device} at ${mount_point}" >&2
+    echo "Written unit ${unit_name} for ${mount_point}" >&2
 }
 
 echo "Writing ECR credential provider config" >&2
@@ -93,6 +91,14 @@ for vol_spec in "${VOLUMES[@]}"; do
     volume_id="${vol_spec%%:*}"
     mount_point="${vol_spec##*:}"
     mount_k3s_volume "${volume_id}" "${mount_point}"
+done
+systemctl daemon-reload
+for vol_spec in "${VOLUMES[@]}"; do
+    volume_id="${vol_spec%%:*}"
+    mount_point="${vol_spec##*:}"
+    unit_name="$(systemd-escape --path "${mount_point}").mount"
+    systemctl enable --now "${unit_name}"
+    echo "Mounted volume ${volume_id} at ${mount_point}" >&2
 done
 
 export INSTALL_K3S_SKIP_DOWNLOAD=true
