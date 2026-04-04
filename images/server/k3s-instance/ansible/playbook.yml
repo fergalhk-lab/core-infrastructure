@@ -46,3 +46,17 @@
         mode: 0600
         owner: 0
         group: 0
+    - name: Create credential provider bin directory
+      ansible.builtin.file:
+        path: /var/lib/rancher/credentialprovider/bin
+        state: directory
+        mode: 0755
+        owner: 0
+        group: 0
+    - name: Download ecr-credential-provider binary
+      ansible.builtin.get_url:
+        url: "https://artifacts.k8s.io/binaries/cloud-provider-aws/{{ecr_credential_provider_version}}/linux/amd64/ecr-credential-provider-linux-amd64"
+        dest: /var/lib/rancher/credentialprovider/bin/ecr-credential-provider
+        mode: 0755
+        owner: 0
+        group: 0
