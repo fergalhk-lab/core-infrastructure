@@ -24,7 +24,7 @@ resource "hcloud_server" "management_k8s" {
   user_data   = <<EOD
 #cloud-config
 runcmd:
-  - /root/bootstrap-k3s.sh '${local.management_k8s.apiserver_endpoint.subdomain}.${local.management_k8s.apiserver_endpoint.zone}' '${local.management_k8s.anonymous_issuer_endpoint.subdomain}.${local.management_k8s.anonymous_issuer_endpoint.zone}'
+  - /root/bootstrap-k3s.sh '${local.management_k8s.apiserver_endpoint.subdomain}.${local.management_k8s.apiserver_endpoint.zone}' '${local.management_k8s.anonymous_issuer_endpoint.subdomain}.${local.management_k8s.anonymous_issuer_endpoint.zone}' '${aws_iam_role.ecr_pull.arn}'
 EOD
 
   network {
