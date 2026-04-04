@@ -4,3 +4,4 @@ modules:
   - edge/zones
   - foundation/hetzner/management
   - foundation/build/container-images
+  - foundation/github/org
