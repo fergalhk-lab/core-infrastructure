@@ -51,7 +51,7 @@ EOF
 )
 
 echo "Waiting for storage volume ${STORAGE_VOLUME_ID} at ${STORAGE_DEVICE}" >&2
-for _ in $(seq 1 30); do
+for _ in $(seq 1 90); do
     [ -b "${STORAGE_DEVICE}" ] && break
     sleep 2
 done
