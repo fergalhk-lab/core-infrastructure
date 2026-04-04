@@ -31,7 +31,7 @@ resource "hcloud_server" "management_k8s" {
   # user_data is applied at first boot only. If the server is replaced by Terraform,
   # the volume ID embedded here will reflect the current volume (correct).
   # A volume destroy+recreate would require a server rebuild anyway.
-  user_data   = <<EOD
+  user_data = <<EOD
 #cloud-config
 runcmd:
   - /root/bootstrap-k3s.sh ${local.bootstrap_k3s_args}

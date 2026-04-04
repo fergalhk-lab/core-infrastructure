@@ -1,5 +1,6 @@
 locals {
-  role_name = format("k8s-mgmt-%s-%s", var.namespace, var.service_account_name)
+  role_name                   = local.is_wildcard_service_account ? format("k8s-mgmt-%s", var.namespace) : format("k8s-mgmt-%s-%s", var.namespace, var.service_account_name)
+  is_wildcard_service_account = var.service_account_name == "*"
 }
 
 variable "oidc_provider_arn" {
@@ -18,7 +19,7 @@ variable "namespace" {
 }
 
 variable "service_account_name" {
-  description = "Kubernetes service account name"
+  description = "Kubernetes service account name. Use special value `*` to match all service accounts in the namespace. Note that partial wildcards are not allowed."
   type        = string
 }
 

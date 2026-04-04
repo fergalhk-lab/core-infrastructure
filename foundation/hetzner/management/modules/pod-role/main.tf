@@ -20,8 +20,8 @@ data "aws_iam_policy_document" "assume_role" {
     }
 
     condition {
-      // Use StringLike when service_account_name contains a wildcard, StringEquals otherwise
-      test     = strcontains(var.service_account_name, "*") ? "StringLike" : "StringEquals"
+      // only allow wildcard values when we're matching all service accounts in the namespace
+      test     = local.is_wildcard_service_account ? "StringLike" : "StringEquals"
       variable = "${local.issuer_host}:sub"
       values   = ["system:serviceaccount:${var.namespace}:${var.service_account_name}"]
     }
