@@ -134,6 +134,12 @@ values:
       ingest_storage:
         enabled: false
 
+      blocks_storage:
+        s3:
+          bucket_name: fergalhk-mimir
+          region: eu-west-1
+          endpoint: s3.eu-west-1.amazonaws.com
+
       usage_stats:
         enabled: false
 
