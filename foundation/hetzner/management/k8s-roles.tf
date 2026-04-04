@@ -29,7 +29,9 @@ module "external_secrets_role" {
 }
 
 locals {
-  management_k8s_oidc_issuer_host = trimprefix(aws_iam_openid_connect_provider.management_k8s.url, "https://")
+  # Derived from the static local rather than the resource to avoid a dependency
+  # cycle through hcloud_server.management_k8s (which references aws_iam_role.ecr_pull).
+  management_k8s_oidc_issuer_host = "${local.management_k8s.anonymous_issuer_endpoint.subdomain}.${local.management_k8s.anonymous_issuer_endpoint.zone}"
 }
 
 data "aws_iam_policy_document" "ecr_pull_assume_role" {
