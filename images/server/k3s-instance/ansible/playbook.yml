@@ -53,10 +53,38 @@
         mode: 0755
         owner: 0
         group: 0
-    - name: Download ecr-credential-provider binary
-      ansible.builtin.get_url:
-        url: "https://artifacts.k8s.io/binaries/cloud-provider-aws/{{ecr_credential_provider_version}}/linux/amd64/ecr-credential-provider-linux-amd64"
-        dest: /var/lib/rancher/credentialprovider/bin/ecr-credential-provider
-        mode: 0755
+    - name: Install Go for building ecr-credential-provider
+      ansible.builtin.unarchive:
+        src: "https://go.dev/dl/go1.24.2.linux-amd64.tar.gz"
+        dest: /usr/local
+        remote_src: yes
+    - name: Clone cloud-provider-aws
+      ansible.builtin.git:
+        repo: https://github.com/kubernetes/cloud-provider-aws.git
+        dest: /tmp/cloud-provider-aws
+        version: "{{ecr_credential_provider_version}}"
+        depth: 1
+    - name: Build ecr-credential-provider
+      ansible.builtin.command:
+        cmd: /usr/local/go/bin/go build -o /var/lib/rancher/credentialprovider/bin/ecr-credential-provider ./cmd/ecr-credential-provider
+        chdir: /tmp/cloud-provider-aws
+      environment:
+        CGO_ENABLED: "0"
+        GOOS: linux
+        GOARCH: amd64
+        GOPATH: /tmp/gobuild
+        HOME: /root
+    - name: Set ecr-credential-provider permissions
+      ansible.builtin.file:
+        path: /var/lib/rancher/credentialprovider/bin/ecr-credential-provider
+        mode: "0755"
         owner: 0
         group: 0
+    - name: Remove Go and build sources
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /usr/local/go
+        - /tmp/cloud-provider-aws
+        - /tmp/gobuild
