@@ -56,13 +56,11 @@ SQLite only stores dashboard definitions, user accounts, and sessions — not me
     ingressClassName: traefik
     hosts:
       - grafana.fergal.website
-    annotations:
-      external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
     tls:
       - hosts:
           - grafana.fergal.website
 ```
-external-dns reads the annotation and creates a Cloudflare-proxied A record for `grafana.fergal.website`.
+external-dns creates a Cloudflare-proxied A record for `grafana.fergal.website` (proxying is enabled globally in the external-dns chart).
 
 **Admin credentials** — not set explicitly; Grafana generates a random password on first deploy and stores it in the secret `kube-prometheus-stack-grafana` (keys: `admin-user`, `admin-password`).
 
