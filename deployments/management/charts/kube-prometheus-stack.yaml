@@ -48,10 +48,10 @@ values:
 
       resources:
         requests:
-          cpu: 50m
-          memory: 256Mi
+          cpu: 200m
+          memory: 512Mi
         limits:
-          memory: 256Mi
+          memory: 512Mi
 
   # kube-state-metrics and node-exporter are enabled by default.
   # The chart creates ServiceMonitors for both automatically.
