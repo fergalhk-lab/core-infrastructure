@@ -29,7 +29,7 @@ values:
       storageSpec: {}
 
       remoteWrite:
-        - url: http://mimir-nginx.mimir.svc/api/v1/push
+        - url: http://mimir-gateway.mimir.svc/api/v1/push
 
       resources:
         requests:
