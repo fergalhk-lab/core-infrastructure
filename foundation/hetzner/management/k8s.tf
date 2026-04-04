@@ -13,6 +13,15 @@ locals {
       subdomain = "issuer-k8s-management" // this needs to be a single level to get a cloudflare cert
     }
   }
+
+  bootstrap_k3s_args = join(" ", [
+    "'${local.management_k8s.apiserver_endpoint.subdomain}.${local.management_k8s.apiserver_endpoint.zone}'",
+    "'${local.management_k8s.anonymous_issuer_endpoint.subdomain}.${local.management_k8s.anonymous_issuer_endpoint.zone}'",
+    "'${aws_iam_role.ecr_pull.arn}'",
+    "'${hcloud_volume.management_k8s["etcd"].id}'",
+    "'${hcloud_volume.management_k8s["tls"].id}'",
+    "'${hcloud_volume.management_k8s["pvs"].id}'",
+  ])
 }
 
 resource "hcloud_server" "management_k8s" {
@@ -22,10 +31,13 @@ resource "hcloud_server" "management_k8s" {
   location          = local.management_k8s.location
   primary_disk_size = 10
   ssh_keys          = [for ssh_key in hcloud_ssh_key.management : ssh_key.id]
+  # user_data is applied at first boot only. If the server is replaced by Terraform,
+  # the volume IDs embedded here will reflect the current volumes (correct).
+  # A volume destroy+recreate would require a server rebuild anyway.
   user_data         = <<EOD
 #cloud-config
 runcmd:
-  - /root/bootstrap-k3s.sh '${local.management_k8s.apiserver_endpoint.subdomain}.${local.management_k8s.apiserver_endpoint.zone}' '${local.management_k8s.anonymous_issuer_endpoint.subdomain}.${local.management_k8s.anonymous_issuer_endpoint.zone}' '${aws_iam_role.ecr_pull.arn}' '${hcloud_volume.management_k8s["etcd"].id}' '${hcloud_volume.management_k8s["tls"].id}' '${hcloud_volume.management_k8s["pvs"].id}'
+  - /root/bootstrap-k3s.sh ${local.bootstrap_k3s_args}
 EOD
 
   network {
