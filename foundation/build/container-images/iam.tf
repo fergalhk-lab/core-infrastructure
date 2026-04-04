@@ -1,35 +1,21 @@
 locals {
-  # Flatten to (image_name, github_repo, branches) tuples
+  # Flatten to (image_name, github_repo) tuples
   _image_workflow_tuples = flatten([
     for image_name, image_cfg in local.container_images : [
       for wf in image_cfg.github_workflows : {
         image_name  = image_name
         github_repo = wf.repo
-        branches    = lookup(wf, "branches", null)
       }
     ]
   ])
 
-  # Unique set of GitHub repos across all images
-  _github_repos = toset([
-    for tuple in local._image_workflow_tuples : tuple.github_repo
-  ])
-
-  # Per GitHub repo: the ECR repos it may push to, and the trust condition strings
+  # Per GitHub repo: the set of ECR repo names it may push to
   _github_repo_configs = {
-    for github_repo in local._github_repos : github_repo => {
-      ecr_repos = toset([
-        for tuple in local._image_workflow_tuples : tuple.image_name
-        if tuple.github_repo == github_repo
-      ])
-      branch_conditions = distinct(flatten([
-        for tuple in local._image_workflow_tuples :
-        tuple.branches == null || length(tuple.branches) == 0
-        ? ["repo:${tuple.github_repo}:*"]
-        : [for branch in tuple.branches : "repo:${tuple.github_repo}:ref:refs/heads/${branch}"]
-        if tuple.github_repo == github_repo
-      ]))
-    }
+    for github_repo in toset([for t in local._image_workflow_tuples : t.github_repo]) :
+    github_repo => toset([
+      for t in local._image_workflow_tuples : t.image_name
+      if t.github_repo == github_repo
+    ])
   }
 }
 
@@ -54,7 +40,7 @@ data "aws_iam_policy_document" "github_ecr_assume_role" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = each.value.branch_conditions
+      values   = ["repo:${each.key}:*"]
     }
   }
 }
@@ -84,7 +70,7 @@ data "aws_iam_policy_document" "github_ecr" {
       "ecr:PutImage",
     ]
     resources = [
-      for repo in each.value.ecr_repos :
+      for repo in each.value :
       "arn:aws:ecr:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:repository/${repo}"
     ]
   }
