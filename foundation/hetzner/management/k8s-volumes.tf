@@ -1,8 +1,8 @@
 resource "hcloud_volume" "management_k8s" {
   name      = "management-k3s-data"
-  size      = 25
+  size      = local.management_k8s.data_volume.size
   location  = local.management_k8s.location
-  format    = "ext4"
+  format    = local.management_k8s.data_volume.format
   automount = false
 }
 

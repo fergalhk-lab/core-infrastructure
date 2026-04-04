@@ -4,6 +4,10 @@ locals {
     image_version = "20260404220808"
     size          = "cx33" // 4vCPU / 8 GiB memory
     location      = "nbg1" // Nuremberg
+    data_volume = {
+      size   = 25
+      format = "ext4" // note - this needs to match the mount unit for the volume
+    }
     apiserver_endpoint = {
       zone      = "fergal.website"
       subdomain = "k8s.management"
