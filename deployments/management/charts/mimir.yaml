@@ -134,6 +134,9 @@ values:
       ingest_storage:
         enabled: false
 
+      usage_stats:
+        enabled: false
+
       common:
         storage:
           backend: s3
@@ -145,6 +148,7 @@ values:
 
       # Required for single-replica operation.
       ingester:
+        push_grpc_method_enabled: true
         ring:
           replication_factor: 1
 
