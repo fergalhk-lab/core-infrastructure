@@ -109,11 +109,10 @@ curl -sfL https://get.k3s.io | sh -s - \
     --kube-apiserver-arg="service-account-jwks-uri=https://${PUBLIC_ISSUER_HOSTNAME}/openid/v1/jwks" \
     --kube-apiserver-arg="service-account-issuer=https://${PUBLIC_ISSUER_HOSTNAME}" \
     --kube-apiserver-arg="service-account-issuer=https://${K3S_HOSTNAME}:${K3S_API_PORT}" \
-    --kube-apiserver-arg="api-audiences=sts.amazonaws.com" \
     --kube-apiserver-arg="anonymous-auth=true" \
     --kubelet-arg="image-credential-provider-config=/var/lib/rancher/credentialprovider/config.yaml" \
     --kubelet-arg="image-credential-provider-bin-dir=/var/lib/rancher/credentialprovider/bin" \
-    --kubelet-arg="feature-gates=KubeletServiceAccountTokenForCredentialProviders"
+    --kubelet-arg="feature-gates=KubeletServiceAccountTokenForCredentialProviders=true"
 
 
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
