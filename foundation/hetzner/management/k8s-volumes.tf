@@ -1,8 +1,8 @@
 locals {
   management_k8s_volumes = {
-    etcd = { size = 3,  mount_point = "/var/lib/rancher/k3s/server/db"  }
-    tls  = { size = 1,  mount_point = "/var/lib/rancher/k3s/server/tls" }
-    pvs  = { size = 25, mount_point = "/var/lib/rancher/k3s/storage"    }
+    etcd = { size = 3  }
+    tls  = { size = 1  }
+    pvs  = { size = 25 }
   }
 }
 
