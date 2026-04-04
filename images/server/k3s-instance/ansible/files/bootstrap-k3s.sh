@@ -2,14 +2,39 @@
 
 set -eEuo pipefail
 
-if [ $# -ne 2 ]; then
-    echo "Usage: ${0} PUBLIC_HOSTNAME PUBLIC_ISSUER_HOSTNAME" >&2
+if [ $# -ne 3 ]; then
+    echo "Usage: ${0} PUBLIC_HOSTNAME PUBLIC_ISSUER_HOSTNAME ECR_ROLE_ARN" >&2
     exit 1
 fi
 
 K3S_HOSTNAME="${1}"
 K3S_API_PORT=6443
 PUBLIC_ISSUER_HOSTNAME="${2}"
+ECR_ROLE_ARN="${3}"
+
+echo "Writing ECR credential provider config" >&2
+mkdir -p /var/lib/rancher/credentialprovider
+install -m 0600 /dev/null /var/lib/rancher/credentialprovider/config.yaml
+
+cat > /var/lib/rancher/credentialprovider/config.yaml <<EOF
+apiVersion: kubelet.config.k8s.io/v1
+kind: CredentialProviderConfig
+providers:
+  - name: ecr-credential-provider
+    matchImages:
+      - "*.dkr.ecr.*.amazonaws.com"
+    defaultCacheDuration: "12h"
+    apiVersion: credentialprovider.kubelet.k8s.io/v1
+    tokenAttributes:
+      serviceAccountTokenAudiences:
+        - sts.amazonaws.com
+      requireServiceAccount: true
+    env:
+      - name: AWS_ROLE_ARN
+        value: "${ECR_ROLE_ARN}"
+      - name: AWS_REGION
+        value: "eu-west-1"
+EOF
 
 export INSTALL_K3S_SKIP_DOWNLOAD=true
 
@@ -24,7 +49,9 @@ curl -sfL https://get.k3s.io | sh -s - \
     --kube-apiserver-arg="service-account-issuer=https://${PUBLIC_ISSUER_HOSTNAME}" \
     --kube-apiserver-arg="service-account-issuer=https://${K3S_HOSTNAME}:${K3S_API_PORT}" \
     --kube-apiserver-arg="api-audiences=sts.amazonaws.com" \
-    --kube-apiserver-arg="anonymous-auth=true"
+    --kube-apiserver-arg="anonymous-auth=true" \
+    --kubelet-arg="image-credential-provider-config=/var/lib/rancher/credentialprovider/config.yaml" \
+    --kubelet-arg="image-credential-provider-bin-dir=/var/lib/rancher/credentialprovider/bin"
 
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
