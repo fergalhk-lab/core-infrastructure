@@ -40,8 +40,7 @@ providers:
     defaultCacheDuration: "12h"
     apiVersion: credentialprovider.kubelet.k8s.io/v1
     tokenAttributes:
-      serviceAccountTokenAudiences:
-        - sts.amazonaws.com
+      serviceAccountTokenAudience: sts.amazonaws.com
       requireServiceAccount: true
     env:
       - name: AWS_ROLE_ARN
