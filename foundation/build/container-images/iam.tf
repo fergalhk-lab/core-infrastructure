@@ -5,7 +5,7 @@ locals {
       for wf in image_cfg.github_workflows : {
         image_name  = image_name
         github_repo = wf.repo
-        branches    = try(length(wf.branches) > 0 ? wf.branches : null, null)
+        branches    = lookup(wf, "branches", null)
       }
     ]
   ])
@@ -24,7 +24,7 @@ locals {
       ])
       branch_conditions = distinct(flatten([
         for tuple in local._image_workflow_tuples :
-        tuple.branches == null
+        tuple.branches == null || length(tuple.branches) == 0
         ? ["repo:${tuple.github_repo}:*"]
         : [for branch in tuple.branches : "repo:${tuple.github_repo}:ref:refs/heads/${branch}"]
         if tuple.github_repo == github_repo
