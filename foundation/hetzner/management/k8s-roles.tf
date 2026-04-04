@@ -40,8 +40,11 @@ data "aws_iam_policy_document" "ecr_pull_assume_role" {
     actions = ["sts:AssumeRoleWithWebIdentity"]
 
     principals {
-      type        = "Federated"
-      identifiers = [aws_iam_openid_connect_provider.management_k8s.arn]
+      type = "Federated"
+      # Construct ARN directly to avoid a cycle through hcloud_server.management_k8s.
+      # aws_iam_openid_connect_provider.management_k8s depends on data.tls_certificate
+      # which depends on the server IP, but the server user_data references this role.
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${local.management_k8s_oidc_issuer_host}"]
     }
 
     condition {
