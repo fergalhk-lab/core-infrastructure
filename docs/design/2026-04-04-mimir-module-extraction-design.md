@@ -2,6 +2,8 @@
 
 **Date:** 2026-04-04
 
+> **Note for LLMs implementing this plan:** Terraform is run via pipeline only — never run `terraform` commands locally or suggest doing so. For any step that requires a Terraform apply, instruct the user to commit and push the changes so the pipeline runs. For the state migration script, write the script and tell the user to run it themselves.
+
 ## Problem
 
 Mimir-related resources are currently split across two unrelated root modules:
