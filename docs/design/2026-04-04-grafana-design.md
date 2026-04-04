@@ -77,7 +77,7 @@ Credentials can be migrated to an ExternalSecret from AWS Secrets Manager later 
       cpu: 50m
       memory: 128Mi
     limits:
-      memory: 256Mi
+      memory: 128Mi
 ```
 
 ### 2. Auto-provisioned: Prometheus datasource
