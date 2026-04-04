@@ -2,7 +2,7 @@ locals {
   management_k8s = {
     name          = "management-k8s"
     image_version = "20260221230215"
-    size          = "cx23"
+    size          = "cx33" // 4vCPU / 8 GiB memory
     location      = "nbg1" // Nuremberg
     apiserver_endpoint = {
       zone      = "fergal.website"
