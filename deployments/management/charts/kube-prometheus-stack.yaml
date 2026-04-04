@@ -5,10 +5,28 @@ chart:
   name: kube-prometheus-stack
   version: 82.17.0
 values:
-  # Grafana is out of scope for this iteration.
-  # Add a separate grafana chart config when visualization is needed.
   grafana:
-    enabled: false
+    enabled: true
+
+    persistence:
+      enabled: true
+      size: 1Gi
+
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+      hosts:
+        - grafana.fergal.website
+      tls:
+        - hosts:
+            - grafana.fergal.website
+
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        memory: 128Mi
 
   # AlertManager disabled — no alerting configured yet.
   alertmanager:

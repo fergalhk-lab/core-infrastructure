@@ -47,8 +47,6 @@ values:
       enabled: true
       ingressClassName: traefik
       hostname: argocd.fergal.website
-      annotations:
-        external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
       tls: true
 
   repoServer:
