@@ -40,6 +40,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "state" {
     id     = "expire-old-versions"
     status = "Enabled"
 
+    filter {
+      prefix = ""
+    }
+
     noncurrent_version_expiration {
       noncurrent_days = 90
     }
@@ -49,8 +53,25 @@ resource "aws_s3_bucket_lifecycle_configuration" "state" {
     id     = "abort-incomplete-multipart-uploads"
     status = "Enabled"
 
+    filter {
+      prefix = ""
+    }
+
     abort_incomplete_multipart_upload {
       days_after_initiation = 7
+    }
+  }
+
+  rule {
+    id     = "expire-plans"
+    status = "Enabled"
+
+    filter {
+      prefix = "plans/"
+    }
+
+    expiration {
+      days = 3
     }
   }
 }

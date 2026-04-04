@@ -39,23 +39,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set artifact name
-        id: meta
-        run: echo "artifact=tfplan-$(echo '${{ matrix.dir }}' | tr '/' '-')" >> "$GITHUB_OUTPUT"
-
       - name: Terraform plan
         uses: ./.github/actions/terraform-run
         with:
           directory: ${{ matrix.dir }}
           command: plan
 
-      - name: Upload plan artifact
+      - name: Upload plan to S3
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ steps.meta.outputs.artifact }}
-          path: ${{ matrix.dir }}/plan.tfplan
-          retention-days: 1
+        run: |
+          aws s3 cp "${{ matrix.dir }}/plan.tfplan" \
+            "s3://fergalhk-terraform-state/plans/${{ github.run_id }}/${{ matrix.dir }}/plan.tfplan"
 
   apply-gate:
     needs: plan
@@ -80,18 +74,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set artifact name
-        id: meta
-        run: echo "artifact=tfplan-$(echo '${{ matrix.dir }}' | tr '/' '-')" >> "$GITHUB_OUTPUT"
-
-      - name: Download plan artifact
-        uses: actions/download-artifact@v4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          name: ${{ steps.meta.outputs.artifact }}
-          path: ${{ matrix.dir }}
+          role-to-assume: arn:aws:iam::740994137039:role/github-core-infrastructure
+          aws-region: eu-west-1
+
+      - name: Download plan from S3
+        run: |
+          aws s3 cp \
+            "s3://fergalhk-terraform-state/plans/${{ github.run_id }}/${{ matrix.dir }}/plan.tfplan" \
+            "${{ matrix.dir }}/plan.tfplan"
 
       - name: Terraform apply
         uses: ./.github/actions/terraform-run
         with:
           directory: ${{ matrix.dir }}
           command: apply
+
+      - name: Delete plan from S3
+        if: success()
+        run: |
+          aws s3 rm \
+            "s3://fergalhk-terraform-state/plans/${{ github.run_id }}/${{ matrix.dir }}/plan.tfplan"
