@@ -1,7 +1,7 @@
 locals {
   management_k8s = {
     name          = "management-k8s"
-    image_version = "20260221230215"
+    image_version = "20260404203152"
     size          = "cx33" // 4vCPU / 8 GiB memory
     location      = "nbg1" // Nuremberg
     apiserver_endpoint = {
@@ -18,22 +18,20 @@ locals {
     "${local.management_k8s.apiserver_endpoint.subdomain}.${local.management_k8s.apiserver_endpoint.zone}",
     "${local.management_k8s.anonymous_issuer_endpoint.subdomain}.${local.management_k8s.anonymous_issuer_endpoint.zone}",
     aws_iam_role.ecr_pull.arn,
-    hcloud_volume.management_k8s["etcd"].id,
-    hcloud_volume.management_k8s["tls"].id,
-    hcloud_volume.management_k8s["pvs"].id,
+    hcloud_volume.management_k8s.id,
   ])
 }
 
 resource "hcloud_server" "management_k8s" {
-  name              = local.management_k8s.name
-  image             = data.hcloud_image.management_k8s_snapshot.id
-  server_type       = local.management_k8s.size
-  location          = local.management_k8s.location
-ssh_keys          = [for ssh_key in hcloud_ssh_key.management : ssh_key.id]
+  name        = local.management_k8s.name
+  image       = data.hcloud_image.management_k8s_snapshot.id
+  server_type = local.management_k8s.size
+  location    = local.management_k8s.location
+  ssh_keys    = [for ssh_key in hcloud_ssh_key.management : ssh_key.id]
   # user_data is applied at first boot only. If the server is replaced by Terraform,
-  # the volume IDs embedded here will reflect the current volumes (correct).
+  # the volume ID embedded here will reflect the current volume (correct).
   # A volume destroy+recreate would require a server rebuild anyway.
-  user_data         = <<EOD
+  user_data   = <<EOD
 #cloud-config
 runcmd:
   - /root/bootstrap-k3s.sh ${local.bootstrap_k3s_args}
