@@ -62,7 +62,7 @@
       ansible.builtin.git:
         repo: https://github.com/kubernetes/cloud-provider-aws.git
         dest: /tmp/cloud-provider-aws
-        version: v1.35.1
+        version: "{{ecr_credential_provider_version}}"
         depth: 1
     - name: Build ecr-credential-provider
       ansible.builtin.command:
