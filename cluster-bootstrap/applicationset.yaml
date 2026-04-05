@@ -4,6 +4,8 @@ metadata:
   name: deployments
   namespace: argocd
 spec:
+  syncPolicy:
+    preserveResourcesOnDeletion: true
   generators:
     - git:
         repoURL: https://github.com/fergalhk-lab/k8s-deployments
