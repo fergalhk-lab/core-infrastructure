@@ -1,0 +1,23 @@
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineHealthCheck
+metadata:
+  name: {{ .Values.clusterName }}-md-0-unhealthy-5m
+  namespace: {{ .Release.Namespace }}
+spec:
+  clusterName: {{ .Values.clusterName }}
+  maxUnhealthy: 100%
+  nodeStartupTimeout: 10m
+  remediationTemplate:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: HCloudRemediationTemplate
+    name: worker-remediation-request
+  selector:
+    matchLabels:
+      nodepool: {{ .Values.clusterName }}-md-0
+  unhealthyConditions:
+  - status: Unknown
+    timeout: 180s
+    type: Ready
+  - status: "False"
+    timeout: 180s
+    type: Ready
