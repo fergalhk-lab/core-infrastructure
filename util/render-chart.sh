@@ -20,4 +20,17 @@ if [[ ! -f "$CONFIG" ]]; then
   exit 1
 fi
 
+
+NAMESPACE="$(yq e -r .namespace "${CONFIG}")"
+
+[[ -z "${NAMESPACE}" ]] && {
+  echo "Namespace not set in config!" >&2
+  exit 1
+}
+
+kubectl create namespace "${NAMESPACE}" --dry-run=client -oyaml
+
+echo ''
+echo '---'
+
 go run "${SCRIPT_DIR}/render-chart" -config "$CONFIG"
