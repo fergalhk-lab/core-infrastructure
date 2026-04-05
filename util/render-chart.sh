@@ -30,7 +30,6 @@ NAMESPACE="$(yq e -r .namespace "${CONFIG}")"
 
 kubectl create namespace "${NAMESPACE}" --dry-run=client -oyaml
 
-echo ''
 echo '---'
 
 go run "${SCRIPT_DIR}/render-chart" -config "$CONFIG"
