@@ -1,0 +1,32 @@
+# NOTE: This manifest is applied manually to bootstrap the cluster.
+# TODO: Automate this — apply on first boot so the cluster is self-managing from startup.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster-apps
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/fergalhk-lab/k8s-deployments
+        revision: HEAD
+        directories:
+          - path: clusters/*/*
+  template:
+    metadata:
+      name: "{{path[1]}}-{{path[2]}}"
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/fergalhk-lab/k8s-deployments
+        targetRevision: HEAD
+        path: "{{path}}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{path[2]}}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - ServerSideApply=true
