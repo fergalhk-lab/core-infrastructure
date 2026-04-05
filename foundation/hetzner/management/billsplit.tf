@@ -35,8 +35,12 @@ resource "aws_iam_role_policy" "billsplit_s3" {
           "s3:PutObject",
           "s3:DeleteObject",
           "s3:GetObject",
+          "s3:ListBucket",
         ]
-        Resource = "${aws_s3_bucket.billsplit_live.arn}/*"
+        Resource = [
+          "${aws_s3_bucket.billsplit_live.arn}/*",
+          aws_s3_bucket.billsplit_live.arn,
+        ]
       }
     ]
   })
