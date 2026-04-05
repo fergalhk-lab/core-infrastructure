@@ -10,6 +10,8 @@ values:
   configs:
     params:
       server.insecure: true # TLS terminated at ingress
+    secret:
+      githubSecret: "$argocd-github-webhook:secret"
 
   controller:
     resources:
@@ -112,3 +114,20 @@ extraObjects:
           remoteRef:
             key: apikeys/github/org-argocd
             property: private_key
+
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: argocd-github-webhook
+      namespace: argocd
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: aws-secrets-manager
+        kind: ClusterSecretStore
+      target:
+        name: argocd-github-webhook
+      data:
+        - secretKey: secret
+          remoteRef:
+            key: argocd/webhook-secret
