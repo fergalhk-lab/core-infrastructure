@@ -10,7 +10,6 @@ values:
   configs:
     params:
       server.insecure: true # TLS terminated at ingress
-      server.anonymousUserEnabled: "false"
     secret:
       githubSecret: "$argocd-github-webhook:secret"
     cm:
