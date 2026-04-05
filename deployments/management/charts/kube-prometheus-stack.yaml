@@ -7,6 +7,11 @@ values:
   grafana:
     enabled: true
 
+    admin:
+      existingSecret: grafana-admin-credentials
+      userKey: admin-user
+      passwordKey: admin-password
+
     envFromSecret: grafana-github-oauth
 
     env:
@@ -95,6 +100,39 @@ values:
         memory: 64Mi
 
 extraObjects:
+  - apiVersion: generators.external-secrets.io/v1alpha1
+    kind: Password
+    metadata:
+      name: grafana-admin-password
+      namespace: kube-prometheus-stack
+    spec:
+      length: 64
+      noUpper: false
+      allowRepeat: true
+      symbols: 0
+
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: grafana-admin-credentials
+      namespace: kube-prometheus-stack
+    spec:
+      refreshInterval: 0s
+      dataFrom:
+        - sourceRef:
+            generatorRef:
+              apiVersion: generators.external-secrets.io/v1alpha1
+              kind: Password
+              name: grafana-admin-password
+      target:
+        name: grafana-admin-credentials
+        creationPolicy: Owner
+        deletionPolicy: Retain
+        template:
+          data:
+            admin-user: admin
+            admin-password: "{{ .password }}"
+
   - apiVersion: external-secrets.io/v1beta1
     kind: ExternalSecret
     metadata:
