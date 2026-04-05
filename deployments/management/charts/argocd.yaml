@@ -12,6 +12,13 @@ values:
       server.insecure: true # TLS terminated at ingress
     secret:
       githubSecret: "$argocd-github-webhook:secret"
+    cm:
+      resource.customizations.ignoreDifferences.external-secrets.io_ExternalSecret:
+        |
+        jqPathExpressions:
+          - '.spec.data[].remoteRef.conversionStrategy'
+          - '.spec.data[].remoteRef.decodingStrategy'
+          - '.spec.data[].remoteRef.metadataPolicy'
 
   controller:
     resources:
