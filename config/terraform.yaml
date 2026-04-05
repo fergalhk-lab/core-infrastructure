@@ -2,6 +2,6 @@ modules:
   - foundation/terraform-state-backend
   - foundation/aws/platform
   - edge/zones
-  - foundation/hetzner/management
+  - foundation/hetzner/management/bootstrap
   - foundation/build/container-images
   - foundation/github/org

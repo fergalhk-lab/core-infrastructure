@@ -6,7 +6,7 @@ locals {
 }
 
 module "authmeta" {
-  source                   = "../../../common/tfmodules/authmeta"
+  source                   = "../../../../common/tfmodules/authmeta"
   enable_cloudflare        = true
   enabled_hetzner_projects = [local.hetzner_project]
 }

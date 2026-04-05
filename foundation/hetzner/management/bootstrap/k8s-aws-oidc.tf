@@ -14,7 +14,7 @@
  *
  */
 module "management_k8s_anonymous_issuer_dns" {
-  source = "../../../common/tfmodules/cloudflare_record"
+  source = "../../../../common/tfmodules/cloudflare_record"
 
   zone_name = local.management_k8s.anonymous_issuer_endpoint.zone
   subdomain = local.management_k8s.anonymous_issuer_endpoint.subdomain
@@ -48,7 +48,7 @@ resource "aws_iam_openid_connect_provider" "management_k8s" {
 }
 
 module "management_k8s_cluster" {
-  source = "../../../common/tfmodules/k8s/cluster"
+  source = "../../../../common/tfmodules/k8s/cluster"
 
   cluster_name       = "management"
   cluster_name_short = "mgmt"
