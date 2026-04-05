@@ -14,7 +14,9 @@ values:
       GF_AUTH_GITHUB_SCOPES: "user:email,read:org"
       GF_AUTH_GITHUB_ALLOWED_ORGANIZATIONS: "fergalhk-lab"
       GF_AUTH_GITHUB_ROLE_ATTRIBUTE_PATH: "'Admin'"
+      GF_AUTH_GITHUB_ROLE_ATTRIBUTE_STRICT: "true"
       GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      GF_AUTH_BASIC_ENABLED: "false"
 
     initChownData:
       enabled: false
