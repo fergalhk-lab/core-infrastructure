@@ -33,7 +33,7 @@ values:
               orgs:
                 - name: fergalhk-lab
     rbac:
-      policy.default: role:''
+      policy.default: ""
       policy.csv: |
         g, fergalhk-lab, role:admin
 
