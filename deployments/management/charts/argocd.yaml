@@ -11,8 +11,6 @@ values:
     params:
       server.insecure: true # TLS terminated at ingress
       server.anonymousUserEnabled: "false"
-      dexserver.disable.tls: "true"
-      server.dex.server.plaintext: "true"
     secret:
       githubSecret: "$argocd-github-webhook:secret"
     cm:
