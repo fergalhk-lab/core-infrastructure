@@ -6,3 +6,4 @@ modules:
   - foundation/hetzner/management/config
   - foundation/build/container-images
   - foundation/github/org
+  - apps/billsplit
