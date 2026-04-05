@@ -29,61 +29,8 @@ jobs:
           matrix=$(yq -o=json -I=0 '.modules | map({"dir": .})' config/terraform.yaml)
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
-  migrate-config-state:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::740994137039:role/github-core-infrastructure
-          aws-region: eu-west-1
-      - name: Move hello_world_role and external_secrets_role to config state
-        run: |
-          set -euo pipefail
-          BUCKET="fergalhk-terraform-state"
-          BOOTSTRAP_KEY="states/core-infrastructure/foundation/hetzner/management/bootstrap/terraform.tfstate"
-          CONFIG_KEY="states/core-infrastructure/foundation/hetzner/management/config/terraform.tfstate"
-
-          aws s3 cp "s3://$BUCKET/$BOOTSTRAP_KEY" bootstrap.tfstate
-
-          # Idempotency check: skip if hello_world_role is already gone from bootstrap
-          if ! jq -e '.resources[] | select(.module == "module.hello_world_role")' bootstrap.tfstate > /dev/null 2>&1; then
-            echo "Migration already complete, skipping"
-            exit 0
-          fi
-
-          # Extract resources to move
-          jq '[.resources[] | select(
-            .module == "module.hello_world_role" or
-            .module == "module.external_secrets_role"
-          )]' bootstrap.tfstate > to_move.json
-
-          # Remove from bootstrap and increment serial
-          jq 'del(.resources[] | select(
-            .module == "module.hello_world_role" or
-            .module == "module.external_secrets_role"
-          )) | .serial += 1' bootstrap.tfstate > bootstrap_updated.tfstate
-
-          # Create or download config state
-          if aws s3 ls "s3://$BUCKET/$CONFIG_KEY" > /dev/null 2>&1; then
-            aws s3 cp "s3://$BUCKET/$CONFIG_KEY" config.tfstate
-          else
-            jq -n --arg lineage "$(uuidgen | tr '[:upper:]' '[:lower:]')" \
-              '{version: 4, terraform_version: "1.9.0", serial: 0, lineage: $lineage, outputs: {}, resources: []}' \
-              > config.tfstate
-          fi
-
-          # Add resources to config and increment serial
-          jq --slurpfile to_move to_move.json '.resources += $to_move[0] | .serial += 1' \
-            config.tfstate > config_updated.tfstate
-
-          # Upload config state first — if interrupted, bootstrap still contains the resources
-          # and the idempotency check will re-run the migration on the next attempt.
-          aws s3 cp config_updated.tfstate "s3://$BUCKET/$CONFIG_KEY"
-          aws s3 cp bootstrap_updated.tfstate "s3://$BUCKET/$BOOTSTRAP_KEY"
-
   plan:
-    needs: [generate-matrix, migrate-config-state]
+    needs: generate-matrix
     runs-on: ubuntu-latest
     name: plan (${{ matrix.dir }})
     concurrency:
