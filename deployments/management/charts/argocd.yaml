@@ -28,8 +28,8 @@ values:
             id: github
             name: GitHub
             config:
-              clientID: $argocd-github-sso:clientID
-              clientSecret: $argocd-github-sso:clientSecret
+              clientID: $sso:clientID
+              clientSecret: $sso:clientSecret
               redirectURI: https://argocd.fergal.website/api/dex/callback
               orgs:
                 - name: fergalhk-lab
@@ -168,7 +168,7 @@ extraObjects:
         name: aws-secrets-manager
         kind: ClusterSecretStore
       target:
-        name: argocd-github-sso
+        name: sso
       data:
         - secretKey: clientID
           remoteRef:
