@@ -41,7 +41,7 @@ EOD
 }
 
 module "management_k8s_apiserver_dns" {
-  source = "../../../common/tfmodules/cloudflare_record"
+  source = "../../../../common/tfmodules/cloudflare_record"
 
   zone_name = local.management_k8s.apiserver_endpoint.zone
   subdomain = local.management_k8s.apiserver_endpoint.subdomain
