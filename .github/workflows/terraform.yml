@@ -29,67 +29,8 @@ jobs:
           matrix=$(yq -o=json -I=0 '.modules | map({"dir": .})' config/terraform.yaml)
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
-  migrate-billsplit-state:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::740994137039:role/github-core-infrastructure
-          aws-region: eu-west-1
-      - uses: hashicorp/setup-terraform@v3
-      - name: Move billsplit resources to apps/billsplit state
-        run: |
-          set -euo pipefail
-          BUCKET="fergalhk-terraform-state"
-          BOOTSTRAP_KEY="states/core-infrastructure/foundation/hetzner/management/bootstrap/terraform.tfstate"
-          BILLSPLIT_KEY="states/core-infrastructure/apps/billsplit/terraform.tfstate"
-
-          aws s3 cp "s3://$BUCKET/$BOOTSTRAP_KEY" bootstrap.tfstate
-
-          # Idempotency check: skip if billsplit_role is already gone from bootstrap
-          if ! terraform state list -state=bootstrap.tfstate 2>/dev/null | grep -q '^module.billsplit_role'; then
-            echo "Migration already complete, skipping"
-            exit 0
-          fi
-
-          # Download billsplit state if it already exists, otherwise terraform will create it
-          if aws s3 ls "s3://$BUCKET/$BILLSPLIT_KEY" > /dev/null 2>&1; then
-            aws s3 cp "s3://$BUCKET/$BILLSPLIT_KEY" billsplit.tfstate
-          fi
-
-          # Move resources using terraform state mv (modifies both files in place)
-          terraform state mv \
-            -state=bootstrap.tfstate \
-            -state-out=billsplit.tfstate \
-            'module.billsplit_role.aws_iam_role.this' \
-            'module.billsplit_role.aws_iam_role.this'
-
-          terraform state mv \
-            -state=bootstrap.tfstate \
-            -state-out=billsplit.tfstate \
-            'aws_s3_bucket.billsplit_live' \
-            'aws_s3_bucket.billsplit_live'
-
-          terraform state mv \
-            -state=bootstrap.tfstate \
-            -state-out=billsplit.tfstate \
-            'aws_s3_bucket_public_access_block.billsplit_live' \
-            'aws_s3_bucket_public_access_block.billsplit_live'
-
-          terraform state mv \
-            -state=bootstrap.tfstate \
-            -state-out=billsplit.tfstate \
-            'aws_iam_role_policy.billsplit_s3' \
-            'aws_iam_role_policy.billsplit_s3'
-
-          # Upload billsplit state first — if interrupted, bootstrap still has the resources
-          # and the idempotency check will re-run on the next attempt
-          aws s3 cp billsplit.tfstate "s3://$BUCKET/$BILLSPLIT_KEY"
-          aws s3 cp bootstrap.tfstate "s3://$BUCKET/$BOOTSTRAP_KEY"
-
   plan:
-    needs: [generate-matrix, migrate-billsplit-state]
+    needs: generate-matrix
     runs-on: ubuntu-latest
     name: plan (${{ matrix.dir }})
     concurrency:
