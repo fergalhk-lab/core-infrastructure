@@ -1,9 +1,9 @@
 locals {
   repos = {
-    "core-infrastructure" = { private = true, description = null }
-    "apps"                = { private = true, description = null }
-    "deployer"            = { private = true, description = null }
-    "k8s-deployments"     = { private = true, description = "rendered manifests to deploy to Kubernetes" }
+    "core-infrastructure" = { private = false, description = null }
+    "apps"                = { private = false, description = null }
+    "deployer"            = { private = false, description = null }
+    "k8s-deployments"     = { private = false, description = "rendered manifests to deploy to Kubernetes" }
   }
 }
 
