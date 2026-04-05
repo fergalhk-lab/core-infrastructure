@@ -19,7 +19,8 @@ values:
         memory: 3Gi
       limits:
         memory: 3Gi
-    extraArgs:
+    # Prevent excessive memory usage during big syncs
+    extraArgs: &processorArg
       - --status-processors=2
       - --operation-processors=1
 
@@ -67,6 +68,7 @@ values:
         memory: 32Mi
       limits:
         memory: 32Mi
+    extraArgs: *processorArg
 
   notifications:
     resources:
@@ -75,6 +77,7 @@ values:
         memory: 32Mi
       limits:
         memory: 32Mi
+    extraArgs: *processorArg
 
 extraObjects:
   - apiVersion: external-secrets.io/v1beta1
