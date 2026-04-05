@@ -14,6 +14,7 @@ values:
       githubSecret: "$argocd-github-webhook:secret"
     cm:
       url: "https://argocd.fergal.website"
+      admin.enabled: "false"
       resource.customizations.ignoreDifferences.external-secrets.io_ExternalSecret:
         |
         jqPathExpressions:
@@ -165,6 +166,12 @@ extraObjects:
         kind: ClusterSecretStore
       target:
         name: sso
+        template:
+          metadata:
+            labels:
+              # Required for ArgoCD to include this secret in its settings cache
+              # for $secret:key substitution in argocd-cm (e.g. $sso:clientID)
+              app.kubernetes.io/part-of: argocd
       data:
         - secretKey: clientID
           remoteRef:
