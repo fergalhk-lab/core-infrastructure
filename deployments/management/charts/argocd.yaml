@@ -1,5 +1,4 @@
 name: argocd
-namespace: argocd
 chart:
   source: https://argoproj.github.io/argo-helm
   name: argo-cd
