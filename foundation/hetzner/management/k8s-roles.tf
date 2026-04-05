@@ -1,8 +1,7 @@
 module "hello_world_role" {
-  source = "./modules/pod-role"
+  source = "../../../common/tfmodules/k8s/pod-role"
 
-  oidc_provider_arn    = aws_iam_openid_connect_provider.management_k8s.arn
-  oidc_issuer_url      = aws_iam_openid_connect_provider.management_k8s.url
+  cluster_name         = "management"
   namespace            = "hello-world"
   service_account_name = "fergal"
 }
@@ -19,10 +18,9 @@ data "aws_iam_policy_document" "external_secrets" {
 }
 
 module "external_secrets_role" {
-  source = "./modules/pod-role"
+  source = "../../../common/tfmodules/k8s/pod-role"
 
-  oidc_provider_arn    = aws_iam_openid_connect_provider.management_k8s.arn
-  oidc_issuer_url      = aws_iam_openid_connect_provider.management_k8s.url
+  cluster_name         = "management"
   namespace            = "external-secrets"
   service_account_name = "external-secrets"
   policy_document      = data.aws_iam_policy_document.external_secrets.json

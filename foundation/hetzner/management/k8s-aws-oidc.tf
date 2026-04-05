@@ -46,3 +46,12 @@ resource "aws_iam_openid_connect_provider" "management_k8s" {
 
   thumbprint_list = [data.tls_certificate.management_k8s_oidc.certificates[0].sha1_fingerprint]
 }
+
+module "management_k8s_cluster" {
+  source = "../../../common/tfmodules/k8s/cluster"
+
+  cluster_name       = "management"
+  cluster_name_short = "mgmt"
+  oidc_provider_arn  = aws_iam_openid_connect_provider.management_k8s.arn
+  oidc_issuer_url    = aws_iam_openid_connect_provider.management_k8s.url
+}
