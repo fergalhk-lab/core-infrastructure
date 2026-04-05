@@ -20,7 +20,6 @@ func writeConfig(t *testing.T, name, content string) string {
 func TestParseConfig_Valid(t *testing.T) {
 	path := writeConfig(t, "my-release.yaml", `
 name: my-release
-namespace: default
 chart:
   source: https://charts.example.com
   version: 1.2.3
@@ -33,7 +32,7 @@ values:
 	cfg, err := config.ParseConfig(path)
 	require.NoError(t, err)
 	assert.Equal(t, "my-release", cfg.Name)
-	assert.Equal(t, "default", cfg.Namespace)
+	assert.Equal(t, "my-release", cfg.Namespace())
 	assert.Equal(t, "https://charts.example.com", cfg.Chart.Source)
 	assert.Equal(t, "1.2.3", cfg.Chart.Version)
 	assert.Equal(t, "example-chart", cfg.Chart.Name)
@@ -43,7 +42,6 @@ values:
 func TestParseConfig_ChartNameFallback(t *testing.T) {
 	path := writeConfig(t, "my-release.yaml", `
 name: my-release
-namespace: default
 chart:
   source: https://charts.example.com
   version: 1.2.3
@@ -57,7 +55,6 @@ chart:
 func TestParseConfig_NoValues(t *testing.T) {
 	path := writeConfig(t, "my-release.yaml", `
 name: my-release
-namespace: default
 chart:
   source: https://charts.example.com
   version: 1.2.3
@@ -71,7 +68,6 @@ chart:
 func TestParseConfig_FilenameMismatch(t *testing.T) {
 	path := writeConfig(t, "wrong-name.yaml", `
 name: my-release
-namespace: default
 chart:
   source: https://charts.example.com
   version: 1.2.3
@@ -90,7 +86,6 @@ func TestParseConfig_MissingFile(t *testing.T) {
 func TestParseConfig_MissingRequiredFields(t *testing.T) {
 	path := writeConfig(t, "my-release.yaml", `
 name: my-release
-namespace: default
 chart:
   source: https://charts.example.com
 `)
@@ -102,7 +97,6 @@ chart:
 func TestParseConfig_ExtraObjects(t *testing.T) {
 	path := writeConfig(t, "my-release.yaml", `
 name: my-release
-namespace: default
 chart:
   source: https://charts.example.com
   version: 1.2.3
@@ -125,7 +119,6 @@ extraObjects:
 func TestParseConfig_NoExtraObjects(t *testing.T) {
 	path := writeConfig(t, "my-release.yaml", `
 name: my-release
-namespace: default
 chart:
   source: https://charts.example.com
   version: 1.2.3

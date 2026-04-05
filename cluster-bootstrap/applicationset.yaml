@@ -12,9 +12,12 @@ spec:
         revision: HEAD
         directories:
           - path: clusters/*/*
+        values:
+          cluster: "{{path[1]}}"
+          appname: "{{path[2]}}"
   template:
     metadata:
-      name: "{{path[1]}}-{{path[2]}}"
+      name: "{{.values.cluster}}-{{.values.appname}}"
     spec:
       project: default
       source:
@@ -23,7 +26,7 @@ spec:
         path: "{{path}}"
       destination:
         server: https://kubernetes.default.svc
-        namespace: "{{path[2]}}"
+        namespace: "{{.values.appname}}"
       syncPolicy:
         automated:
           prune: true

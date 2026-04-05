@@ -1,5 +1,4 @@
 name: external-dns
-namespace: external-dns
 chart:
   source: https://kubernetes-sigs.github.io/external-dns/
   name: external-dns

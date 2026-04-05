@@ -14,7 +14,6 @@ var ErrFilenameMismatch = errors.New("filename does not match release name")
 
 type Config struct {
 	Name         string           `json:"name"`
-	Namespace    string           `json:"namespace"`
 	Chart        ChartConfig      `json:"chart"`
 	Values       map[string]any   `json:"values"`
 	ExtraObjects []map[string]any `json:"extraObjects"`
@@ -34,6 +33,10 @@ func (c *Config) ChartName() string {
 	return c.Name
 }
 
+func (c *Config) Namespace() string {
+	return c.Name
+}
+
 // ParseConfig reads and validates the config file at path.
 func ParseConfig(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
@@ -46,7 +49,7 @@ func ParseConfig(path string) (*Config, error) {
 		return nil, fmt.Errorf("parsing config: %w", err)
 	}
 
-	if cfg.Name == "" || cfg.Namespace == "" || cfg.Chart.Source == "" || cfg.Chart.Version == "" {
+	if cfg.Name == "" || cfg.Chart.Source == "" || cfg.Chart.Version == "" {
 		return nil, fmt.Errorf("config missing required fields: name, namespace, chart.source, and chart.version must all be set")
 	}
 

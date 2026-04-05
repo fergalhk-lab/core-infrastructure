@@ -1,5 +1,4 @@
 name: cluster-api-operator
-namespace: capi-operator-system
 chart:
   source: https://kubernetes-sigs.github.io/cluster-api-operator/
   name: cluster-api-operator
