@@ -29,27 +29,8 @@ jobs:
           matrix=$(yq -o=json -I=0 '.modules | map({"dir": .})' config/terraform.yaml)
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
-  migrate-bootstrap-state:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::740994137039:role/github-core-infrastructure
-          aws-region: eu-west-1
-      - name: Copy management state to bootstrap path
-        run: |
-          SOURCE="s3://fergalhk-terraform-state/states/core-infrastructure/foundation/hetzner/management/terraform.tfstate"
-          DEST="s3://fergalhk-terraform-state/states/core-infrastructure/foundation/hetzner/management/bootstrap/terraform.tfstate"
-          if aws s3 ls "$SOURCE" > /dev/null 2>&1 && ! aws s3 ls "$DEST" > /dev/null 2>&1; then
-            aws s3 cp "$SOURCE" "$DEST"
-            echo "Copied management state to bootstrap path"
-          else
-            echo "State copy not needed (source absent or destination already exists)"
-          fi
-
   plan:
-    needs: [generate-matrix, migrate-bootstrap-state]
+    needs: generate-matrix
     runs-on: ubuntu-latest
     name: plan (${{ matrix.dir }})
     concurrency:
