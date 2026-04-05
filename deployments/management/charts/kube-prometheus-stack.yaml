@@ -111,7 +111,7 @@ extraObjects:
       allowRepeat: true
       symbols: 0
 
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: grafana-admin-credentials
@@ -133,7 +133,7 @@ extraObjects:
             admin-user: admin
             admin-password: "{{ .password }}"
 
-  - apiVersion: external-secrets.io/v1beta1
+  - apiVersion: external-secrets.io/v1
     kind: ExternalSecret
     metadata:
       name: grafana-github-oauth
