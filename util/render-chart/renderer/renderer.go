@@ -37,16 +37,22 @@ func Render(cfg *config.Config) error {
 		return fmt.Errorf("closing temp file: %w", err)
 	}
 
-	log.Printf(">>> Rendering %s version %s as release %q in namespace %q",
-		cfg.ChartName(), cfg.Chart.Version, cfg.Name, cfg.Namespace())
+	args := []string{"template", cfg.Name}
+	var workDir string
+	if cfg.Chart.IsLocal() {
+		log.Printf(">>> Rendering local chart %s as release %q in namespace %q",
+			cfg.Chart.Source, cfg.Name, cfg.Namespace())
+		args = append(args, cfg.Chart.Source)
+		workDir = cfg.ConfigDir
+	} else {
+		log.Printf(">>> Rendering %s version %s as release %q in namespace %q",
+			cfg.ChartName(), cfg.Chart.Version, cfg.Name, cfg.Namespace())
+		args = append(args, cfg.ChartName(), "--repo", cfg.Chart.Source, "--version", cfg.Chart.Version)
+	}
+	args = append(args, "--namespace", cfg.Namespace(), "--include-crds", "--values", tmp.Name())
 
-	cmd := exec.Command("helm", "template", cfg.Name, cfg.ChartName(),
-		"--repo", cfg.Chart.Source,
-		"--namespace", cfg.Namespace(),
-		"--version", cfg.Chart.Version,
-		"--include-crds",
-		"--values", tmp.Name(),
-	)
+	cmd := exec.Command("helm", args...)
+	cmd.Dir = workDir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 

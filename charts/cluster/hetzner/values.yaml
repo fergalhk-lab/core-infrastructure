@@ -1,0 +1,19 @@
+clusterName: hetzner-cluster
+
+kubernetes:
+  version: "1.35.3"
+
+hetzner:
+  region: nbg1
+  sshKeyName: management-laptop
+  secretName: hetzner
+
+controlPlane:
+  replicas: 3
+  machineType: cpx31
+
+workers:
+  replicas: 3
+  machineType: cpx31
+
+podCIDR: "10.244.0.0/16"
