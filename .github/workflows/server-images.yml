@@ -47,6 +47,7 @@ jobs:
         uses: tj-actions/changed-files@v47
         with:
           files: images/server/*/**
+          files_ignore: images/server/_common/**
           dir_names: true
           dir_names_max_depth: 3
           matrix: true
