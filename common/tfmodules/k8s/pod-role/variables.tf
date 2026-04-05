@@ -25,7 +25,7 @@ variable "role_name" {
   default     = null
 
   validation {
-    condition     = var.namespace != "*" || var.role_name != null
-    error_message = "role_name must be set when namespace = \"*\"."
+    condition     = (var.namespace != "*" && var.service_account_name != "*") || var.role_name != null
+    error_message = "role_name must be set when namespace or service_account_name is \"*\"."
   }
 }
