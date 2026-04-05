@@ -1,5 +1,4 @@
-# NOTE: This manifest is applied manually to bootstrap the cluster.
-# It makes ArgoCD self-manage the cluster-bootstrap/ directory.
+# NOTE: This manifest is applied manually to the management cluster on initial build to bootstrap the cluster.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
