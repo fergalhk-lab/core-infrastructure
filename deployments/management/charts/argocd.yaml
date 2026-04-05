@@ -10,31 +10,15 @@ values:
   configs:
     params:
       server.insecure: true # TLS terminated at ingress
-      server.anonymousUserEnabled: "false"
     secret:
       githubSecret: "$argocd-github-webhook:secret"
     cm:
-      url: "https://argocd.fergal.website"
-      admin.enabled: "false"
       resource.customizations.ignoreDifferences.external-secrets.io_ExternalSecret:
         |
         jqPathExpressions:
           - '.spec.data[].remoteRef.conversionStrategy'
           - '.spec.data[].remoteRef.decodingStrategy'
           - '.spec.data[].remoteRef.metadataPolicy'
-      dex.config: |
-        connectors:
-          - type: github
-            id: github
-            name: GitHub
-            config:
-              clientID: $sso:clientID
-              clientSecret: $sso:clientSecret
-              redirectURI: https://argocd.fergal.website/api/dex/callback
-              orgs:
-                - name: fergalhk-lab
-    rbac:
-      policy.default: role:admin
 
   controller:
     resources:
@@ -154,25 +138,3 @@ extraObjects:
         - secretKey: secret
           remoteRef:
             key: argocd/webhook-secret
-
-  - apiVersion: external-secrets.io/v1beta1
-    kind: ExternalSecret
-    metadata:
-      name: argocd-github-sso
-      namespace: argocd
-    spec:
-      refreshInterval: 1h
-      secretStoreRef:
-        name: aws-secrets-manager
-        kind: ClusterSecretStore
-      target:
-        name: sso
-      data:
-        - secretKey: clientID
-          remoteRef:
-            key: apikeys/github-oauth/argocd
-            property: client_id
-        - secretKey: clientSecret
-          remoteRef:
-            key: apikeys/github-oauth/argocd
-            property: client_secret
