@@ -19,6 +19,9 @@ values:
         memory: 3Gi
       limits:
         memory: 3Gi
+    extraArgs:
+      - --status-processors=2
+      - --operation-processors=1
 
   dex:
     resources:
