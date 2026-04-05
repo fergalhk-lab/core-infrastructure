@@ -120,3 +120,30 @@ extraObjects:
           data:
             admin-user: admin
             admin-password: "{{ .password }}"
+
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: grafana-github-oauth
+      namespace: kube-prometheus-stack
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: aws-secrets-manager
+        kind: ClusterSecretStore
+      target:
+        name: grafana-github-oauth
+        creationPolicy: Owner
+        template:
+          data:
+            GF_AUTH_GITHUB_CLIENT_ID: "{{ .client_id }}"
+            GF_AUTH_GITHUB_CLIENT_SECRET: "{{ .client_secret }}"
+      data:
+        - secretKey: client_id
+          remoteRef:
+            key: apikeys/github-oauth/grafana
+            property: client_id
+        - secretKey: client_secret
+          remoteRef:
+            key: apikeys/github-oauth/grafana
+            property: client_secret
