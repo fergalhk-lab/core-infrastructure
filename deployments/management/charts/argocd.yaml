@@ -24,9 +24,9 @@ values:
     resources:
       requests:
         cpu: 135m
-        memory: 512Mi
+        memory: 2Gi
       limits:
-        memory: 512Mi
+        memory: 2Gi
     # Prevent excessive memory usage during big syncs
     extraArgs:
       - --status-processors=2
@@ -52,9 +52,9 @@ values:
     resources:
       requests:
         cpu: 20m
-        memory: 96Mi
+        memory: 256Mi
       limits:
-        memory: 96Mi
+        memory: 256Mi
     ingress:
       enabled: true
       ingressClassName: traefik
