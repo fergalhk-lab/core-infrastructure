@@ -8,8 +8,8 @@ metadata:
 spec:
   clusterName: {{ .Values.clusterName }}
   replicas: {{ .Values.workers.replicas }}
-  selector:
-    matchLabels: null
+  # selector:
+  #   matchLabels: null
   template:
     metadata:
       labels:
