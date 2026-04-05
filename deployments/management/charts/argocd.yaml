@@ -28,15 +28,13 @@ values:
             id: github
             name: GitHub
             config:
-              clientID: $argocd-github-sso:client_id
-              clientSecret: $argocd-github-sso:client_secret
+              clientID: $sso:clientID
+              clientSecret: $sso:clientSecret
               redirectURI: https://argocd.fergal.website/api/dex/callback
               orgs:
                 - name: fergalhk-lab
     rbac:
-      policy.default: ""
-      policy.csv: |
-        g, fergalhk-lab, role:admin
+      policy.default: role:admin
 
   controller:
     resources:
@@ -168,13 +166,13 @@ extraObjects:
         name: aws-secrets-manager
         kind: ClusterSecretStore
       target:
-        name: argocd-github-sso
+        name: sso
       data:
-        - secretKey: client_id
+        - secretKey: clientID
           remoteRef:
             key: apikeys/github-oauth/argocd
             property: client_id
-        - secretKey: client_secret
+        - secretKey: clientSecret
           remoteRef:
             key: apikeys/github-oauth/argocd
             property: client_secret
