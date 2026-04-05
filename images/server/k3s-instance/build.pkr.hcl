@@ -11,5 +11,6 @@ build {
       "--extra-vars",
       "k3s_version=${local.k3s_version} ecr_credential_provider_version=${local.ecr_credential_provider_version}"
     ]
+    ansible_env_vars = ["ANSIBLE_ROLES_PATH=${path.root}/../_common/ansible/roles"]
   }
 }
