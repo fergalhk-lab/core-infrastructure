@@ -14,7 +14,6 @@ values:
     secret:
       githubSecret: "$argocd-github-webhook:secret"
     cm:
-      url: "https://argocd.fergal.website"
       admin.enabled: "false"
       resource.customizations.ignoreDifferences.external-secrets.io_ExternalSecret:
         |
