@@ -134,6 +134,7 @@ extraObjects:
       target:
         name: grafana-github-oauth
         creationPolicy: Owner
+        deletionPolicy: Retain
         template:
           data:
             GF_AUTH_GITHUB_CLIENT_ID: "{{ .client_id }}"
