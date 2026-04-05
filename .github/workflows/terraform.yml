@@ -77,9 +77,10 @@ jobs:
           jq --slurpfile to_move to_move.json '.resources += $to_move[0] | .serial += 1' \
             config.tfstate > config_updated.tfstate
 
-          # Upload both modified state files
-          aws s3 cp bootstrap_updated.tfstate "s3://$BUCKET/$BOOTSTRAP_KEY"
+          # Upload config state first — if interrupted, bootstrap still contains the resources
+          # and the idempotency check will re-run the migration on the next attempt.
           aws s3 cp config_updated.tfstate "s3://$BUCKET/$CONFIG_KEY"
+          aws s3 cp bootstrap_updated.tfstate "s3://$BUCKET/$BOOTSTRAP_KEY"
 
   plan:
     needs: [generate-matrix, migrate-config-state]
