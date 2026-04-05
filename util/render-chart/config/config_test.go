@@ -128,3 +128,42 @@ chart:
 	require.NoError(t, err)
 	assert.Nil(t, cfg.ExtraObjects)
 }
+
+func TestParseConfig_LocalChart(t *testing.T) {
+	path := writeConfig(t, "my-release.yaml", `
+name: my-release
+chart:
+  source: ../../charts/my-chart
+values:
+  key: value
+`)
+	cfg, err := config.ParseConfig(path)
+	require.NoError(t, err)
+	assert.True(t, cfg.Chart.IsLocal())
+	assert.Equal(t, "../../charts/my-chart", cfg.Chart.Source)
+	assert.Empty(t, cfg.Chart.Version)
+	assert.Equal(t, filepath.Dir(path), cfg.ConfigDir)
+}
+
+func TestParseConfig_LocalChartMissingSource(t *testing.T) {
+	path := writeConfig(t, "my-release.yaml", `
+name: my-release
+chart:
+  version: 1.2.3
+`)
+	_, err := config.ParseConfig(path)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "missing required fields")
+}
+
+func TestParseConfig_ConfigDir(t *testing.T) {
+	path := writeConfig(t, "my-release.yaml", `
+name: my-release
+chart:
+  source: https://charts.example.com
+  version: 1.2.3
+`)
+	cfg, err := config.ParseConfig(path)
+	require.NoError(t, err)
+	assert.Equal(t, filepath.Dir(path), cfg.ConfigDir)
+}
