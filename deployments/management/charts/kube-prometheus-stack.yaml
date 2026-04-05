@@ -2,7 +2,7 @@ name: kube-prometheus-stack
 chart:
   source: https://prometheus-community.github.io/helm-charts
   name: kube-prometheus-stack
-  version: 82.18.0
+  version: 82.17.0
 values:
   grafana:
     enabled: true
@@ -132,7 +132,8 @@ extraObjects:
           data:
             admin-user: admin
             admin-password: "{{ .password }}"
-  - apiVersion: external-secrets.io/v1
+
+  - apiVersion: external-secrets.io/v1beta1
     kind: ExternalSecret
     metadata:
       name: grafana-github-oauth

@@ -2,7 +2,7 @@ name: argocd
 chart:
   source: https://argoproj.github.io/argo-helm
   name: argo-cd
-  version: 9.4.17
+  version: 9.4.3
 values:
   global:
     domain: argocd.management.fergal.website
@@ -101,7 +101,7 @@ values:
         memory: 48Mi
 
 extraObjects:
-  - apiVersion: external-secrets.io/v1
+  - apiVersion: external-secrets.io/v1beta1
     kind: ExternalSecret
     metadata:
       name: argocd-github-app-creds
@@ -137,7 +137,7 @@ extraObjects:
             key: apikeys/github/org-argocd
             property: private_key
 
-  - apiVersion: external-secrets.io/v1
+  - apiVersion: external-secrets.io/v1beta1
     kind: ExternalSecret
     metadata:
       name: argocd-github-webhook
@@ -154,7 +154,7 @@ extraObjects:
           remoteRef:
             key: argocd/webhook-secret
 
-  - apiVersion: external-secrets.io/v1
+  - apiVersion: external-secrets.io/v1beta1
     kind: ExternalSecret
     metadata:
       name: argocd-github-sso
