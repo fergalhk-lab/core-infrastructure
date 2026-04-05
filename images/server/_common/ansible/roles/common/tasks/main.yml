@@ -1,0 +1,22 @@
+- name: Upgrade apt packages
+  ansible.builtin.apt:
+    upgrade: safe
+    update_cache: true
+- name: Install fail2ban
+  ansible.builtin.apt:
+    name: fail2ban
+    state: present
+- name: Configure fail2ban for SSH
+  ansible.builtin.copy:
+    src: fail2ban/sshd.conf
+    dest: /etc/fail2ban/jail.d/sshd.conf
+- name: Restart fail2ban
+  ansible.builtin.systemd_service:
+    state: restarted
+    name: fail2ban
+- name: Configure sshd auth
+  ansible.builtin.copy:
+    src: sshd/auth.conf
+    dest: /etc/ssh/sshd_config.d/auth.conf
+- name: Disable ufw
+  ansible.builtin.command: ufw disable
