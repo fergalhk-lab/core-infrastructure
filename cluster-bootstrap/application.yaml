@@ -1,0 +1,21 @@
+# NOTE: This manifest is applied manually to the management cluster on initial build to bootstrap the cluster.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cluster-bootstrap
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/fergalhk-lab/core-infrastructure
+    targetRevision: HEAD
+    path: cluster-bootstrap
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true

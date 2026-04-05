@@ -1,0 +1,122 @@
+name: kube-prometheus-stack
+chart:
+  source: https://prometheus-community.github.io/helm-charts
+  name: kube-prometheus-stack
+  version: 82.17.0
+values:
+  grafana:
+    enabled: true
+
+    admin:
+      existingSecret: grafana-admin-credentials
+      userKey: admin-user
+      passwordKey: admin-password
+
+    initChownData:
+      enabled: false
+
+    persistence:
+      enabled: true
+      size: 1Gi
+
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+      hosts:
+        - grafana.fergal.website
+      tls:
+        - hosts:
+            - grafana.fergal.website
+
+    resources:
+      requests:
+        cpu: 50m
+        memory: 256Mi
+      limits:
+        memory: 256Mi
+
+  # AlertManager disabled — no alerting configured yet.
+  alertmanager:
+    enabled: false
+
+  prometheus:
+    prometheusSpec:
+      retention: 7d
+
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: local-path
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 20Gi
+
+      resources:
+        requests:
+          cpu: 75m
+          memory: 1Gi
+        limits:
+          memory: 1Gi
+
+  # kube-state-metrics and node-exporter are enabled by default.
+  # The chart creates ServiceMonitors for both automatically.
+  kube-state-metrics:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        memory: 64Mi
+
+  # prometheus-node-exporter is the sub-chart name; resources go here, not under nodeExporter:
+  prometheus-node-exporter:
+    resources:
+      requests:
+        cpu: 5m
+        memory: 32Mi
+      limits:
+        memory: 32Mi
+
+  prometheusOperator:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        memory: 64Mi
+
+extraObjects:
+  - apiVersion: generators.external-secrets.io/v1alpha1
+    kind: Password
+    metadata:
+      name: grafana-admin-password
+      namespace: kube-prometheus-stack
+    spec:
+      length: 64
+      noUpper: false
+      allowRepeat: true
+      symbols: 0
+
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: grafana-admin-credentials
+      namespace: kube-prometheus-stack
+    spec:
+      refreshInterval: 0s
+      dataFrom:
+        - sourceRef:
+            generatorRef:
+              apiVersion: generators.external-secrets.io/v1alpha1
+              kind: Password
+              name: grafana-admin-password
+      target:
+        name: grafana-admin-credentials
+        creationPolicy: Owner
+        deletionPolicy: Retain
+        template:
+          data:
+            admin-user: admin
+            admin-password: "{{ .password }}"

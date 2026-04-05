@@ -1,0 +1,162 @@
+name: Render manifests
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "deployments/**"
+      - "util/render-chart**"
+  pull_request:
+    paths:
+      - "deployments/**"
+      - "util/render-chart**"
+  workflow_dispatch: {}
+
+concurrency:
+  group: render-manifests-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  render-and-push:
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - uses: azure/setup-helm@v4
+
+      - name: Get GitHub App token
+        id: token
+        uses: ./.github/actions/github-app-token
+        with:
+          repositories: k8s-deployments
+
+      - name: Check out k8s-deployments
+        uses: actions/checkout@v4
+        with:
+          repository: fergalhk-lab/k8s-deployments
+          token: ${{ steps.token.outputs.token }}
+          path: k8s-deployments
+
+      - name: Render manifests
+        run: |
+          set -euo pipefail
+          for cluster_dir in deployments/*/; do
+            cluster=$(basename "$cluster_dir")
+            for chart in "${cluster_dir}charts/"*.yaml; do
+              app=$(basename "$chart" .yaml)
+              mkdir -p "k8s-deployments/clusters/$cluster/$app"
+              ./util/render-chart.sh "$chart" \
+                > "k8s-deployments/clusters/$cluster/$app/manifest.yaml"
+            done
+          done
+
+      - name: Commit and push
+        working-directory: k8s-deployments
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add clusters/
+          if git diff --staged --quiet; then
+            echo "No changes to rendered manifests."
+            exit 0
+          fi
+          git commit -m "chore: render manifests from fergalhk-lab/core-infrastructure@${{ github.sha }}"
+          git push
+
+  pr-diff:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - uses: azure/setup-helm@v4
+
+      - name: Render main branch (before)
+        run: |
+          set -euo pipefail
+          for cluster_dir in deployments/*/; do
+            cluster=$(basename "$cluster_dir")
+            for chart in "${cluster_dir}charts/"*.yaml; do
+              app=$(basename "$chart" .yaml)
+              mkdir -p "/tmp/before/clusters/$cluster/$app"
+              ./util/render-chart.sh "$chart" \
+                > "/tmp/before/clusters/$cluster/$app/manifest.yaml"
+            done
+          done
+
+      - name: Fetch and rebase PR branch onto main
+        id: rebase
+        run: |
+          git fetch origin "${{ github.head_ref }}"
+          git checkout "${{ github.head_ref }}"
+          if ! git rebase origin/main 2>&1 | tee /tmp/rebase-output.txt; then
+            git rebase --abort || true
+            echo "failed=true" >> "$GITHUB_OUTPUT"
+            {
+              echo "## Manifest diff"
+              echo ""
+              echo ":x: **Rebase failed** — this branch could not be rebased onto \`main\`. Resolve conflicts before merging."
+              echo ""
+              echo "<details><summary>Rebase output</summary>"
+              echo ""
+              echo '```'
+              cat /tmp/rebase-output.txt
+              echo '```'
+              echo ""
+              echo "</details>"
+            } > /tmp/rebase-error.md
+          fi
+
+      - name: Post rebase failure comment
+        if: steps.rebase.outputs.failed == 'true'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: manifest-diff
+          path: /tmp/rebase-error.md
+
+      - name: Render PR branch (after)
+        if: steps.rebase.outputs.failed != 'true'
+        run: |
+          set -euo pipefail
+          for cluster_dir in deployments/*/; do
+            cluster=$(basename "$cluster_dir")
+            for chart in "${cluster_dir}charts/"*.yaml; do
+              app=$(basename "$chart" .yaml)
+              mkdir -p "/tmp/after/clusters/$cluster/$app"
+              ./util/render-chart.sh "$chart" \
+                > "/tmp/after/clusters/$cluster/$app/manifest.yaml"
+            done
+          done
+
+      - name: Generate diff comment
+        if: steps.rebase.outputs.failed != 'true'
+        run: |
+          .github/scripts/generate-manifest-diff.sh \
+            /tmp/before/clusters \
+            /tmp/after/clusters \
+            /tmp/diff-comment.md
+
+      - name: Post diff comment
+        if: steps.rebase.outputs.failed != 'true'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: manifest-diff
+          path: /tmp/diff-comment.md

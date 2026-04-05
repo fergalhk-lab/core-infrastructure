@@ -1,0 +1,13 @@
+locals {
+  aws_account = "platform"
+}
+
+module "meta" {
+  source = "../../common/tfmodules/meta"
+}
+
+provider "aws" {
+  assume_role {
+    role_arn = module.meta.aws_deploy_role_arns[local.aws_account]
+  }
+}

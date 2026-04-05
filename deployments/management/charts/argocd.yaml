@@ -1,0 +1,133 @@
+name: argocd
+chart:
+  source: https://argoproj.github.io/argo-helm
+  name: argo-cd
+  version: 9.4.3
+values:
+  global:
+    domain: argocd.management.fergal.website
+
+  configs:
+    params:
+      server.insecure: true # TLS terminated at ingress
+    secret:
+      githubSecret: "$argocd-github-webhook:secret"
+
+  controller:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 3Gi
+      limits:
+        memory: 3Gi
+    # Prevent excessive memory usage during big syncs
+    extraArgs:
+      - --status-processors=2
+      - --operation-processors=1
+
+  dex:
+    resources:
+      requests:
+        cpu: 5m
+        memory: 64Mi
+      limits:
+        memory: 64Mi
+
+  redis:
+    resources:
+      requests:
+        cpu: 20m
+        memory: 64Mi
+      limits:
+        memory: 64Mi
+
+  server:
+    resources:
+      requests:
+        cpu: 20m
+        memory: 256Mi
+      limits:
+        memory: 256Mi
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+      hostname: argocd.fergal.website
+      tls: true
+
+  repoServer:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        memory: 128Mi
+
+  applicationSet:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        memory: 32Mi
+
+  notifications:
+    resources:
+      requests:
+        cpu: 5m
+        memory: 32Mi
+      limits:
+        memory: 32Mi
+
+extraObjects:
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: argocd-github-app-creds
+      namespace: argocd
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: aws-secrets-manager
+        kind: ClusterSecretStore
+      target:
+        name: argocd-github-app-creds
+        template:
+          metadata:
+            labels:
+              argocd.argoproj.io/secret-type: repo-creds
+          data:
+            type: git
+            url: https://github.com/fergalhk-lab
+            githubAppID: "{{ .app_id }}"
+            githubAppInstallationID: "{{ .installation_id }}"
+            githubAppPrivateKey: "{{ .private_key }}"
+      data:
+        - secretKey: app_id
+          remoteRef:
+            key: apikeys/github/org-argocd
+            property: app_id
+        - secretKey: installation_id
+          remoteRef:
+            key: apikeys/github/org-argocd
+            property: installation_id
+        - secretKey: private_key
+          remoteRef:
+            key: apikeys/github/org-argocd
+            property: private_key
+
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: argocd-github-webhook
+      namespace: argocd
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: aws-secrets-manager
+        kind: ClusterSecretStore
+      target:
+        name: argocd-github-webhook
+      data:
+        - secretKey: secret
+          remoteRef:
+            key: argocd/webhook-secret

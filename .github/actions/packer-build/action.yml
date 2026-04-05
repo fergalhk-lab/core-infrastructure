@@ -1,0 +1,43 @@
+name: Packer Build
+description: Build a Packer image targeting Hetzner Cloud
+
+inputs:
+  directory:
+    description: Relative path to the packer image directory (e.g. images/server/k3s-instance)
+    required: true
+  save_snapshot:
+    description: Pass true to persist the Hetzner snapshot
+    required: false
+    default: "false"
+  hcloud_project_name:
+    description: Hetzner Cloud Project Name
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Get token
+      id: get-token
+      uses: ./.github/actions/get-hcloud-token
+      with:
+        project_name: ${{ inputs.hcloud_project_name }}
+
+    - name: Install Packer & Ansible
+      shell: bash
+      run: |
+        curl -fsSL https://apt.releases.hashicorp.com/gpg \
+          | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+        echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
+          https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
+          | sudo tee /etc/apt/sources.list.d/hashicorp.list
+        sudo apt-get update -qq
+        sudo apt-get install -y --no-install-recommends packer ansible
+
+    - name: Packer init & build
+      shell: bash
+      working-directory: ${{ inputs.directory }}
+      env:
+        HCLOUD_TOKEN: ${{ steps.get-token.outputs.token }}
+      run: |
+        packer init .
+        packer build -var "save_snapshot=${{ inputs.save_snapshot }}" .

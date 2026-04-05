@@ -1,0 +1,103 @@
+name: Run Terraform
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch: {}
+
+concurrency:
+  group: terraform-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.generate.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate matrix
+        id: generate
+        run: |
+          matrix=$(yq -o=json -I=0 '.modules | map({"dir": .})' config/terraform.yaml)
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+
+  plan:
+    needs: generate-matrix
+    runs-on: ubuntu-latest
+    name: plan (${{ matrix.dir }})
+    concurrency:
+      group: terraform-${{ matrix.dir }}
+      cancel-in-progress: false
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Terraform plan
+        uses: ./.github/actions/terraform-run
+        with:
+          directory: ${{ matrix.dir }}
+          command: plan
+
+      - name: Upload plan to S3
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: |
+          aws s3 cp "${{ matrix.dir }}/plan.tfplan" \
+            "s3://fergalhk-terraform-state/plans/${{ github.run_id }}/${{ matrix.dir }}/plan.tfplan"
+
+  apply-gate:
+    needs: plan
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    environment: terraform-apply
+    steps:
+      - run: echo "Approved"
+
+  apply:
+    needs: [generate-matrix, apply-gate]
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    name: apply (${{ matrix.dir }})
+    concurrency:
+      group: terraform-${{ matrix.dir }}
+      cancel-in-progress: false
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::740994137039:role/github-core-infrastructure
+          aws-region: eu-west-1
+
+      - name: Download plan from S3
+        run: |
+          aws s3 cp \
+            "s3://fergalhk-terraform-state/plans/${{ github.run_id }}/${{ matrix.dir }}/plan.tfplan" \
+            "${{ matrix.dir }}/plan.tfplan"
+
+      - name: Terraform apply
+        uses: ./.github/actions/terraform-run
+        with:
+          directory: ${{ matrix.dir }}
+          command: apply
+
+      - name: Delete plan from S3
+        if: success()
+        run: |
+          aws s3 rm \
+            "s3://fergalhk-terraform-state/plans/${{ github.run_id }}/${{ matrix.dir }}/plan.tfplan"
