@@ -17,6 +17,7 @@ values:
       GF_AUTH_GITHUB_ROLE_ATTRIBUTE_STRICT: "true"
       GF_AUTH_DISABLE_LOGIN_FORM: "true"
       GF_AUTH_BASIC_ENABLED: "false"
+      GF_SERVER_ROOT_URL: "https://grafana.fergal.website"
 
     initChownData:
       enabled: false
