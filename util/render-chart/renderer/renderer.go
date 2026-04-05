@@ -37,27 +37,28 @@ func Render(cfg *config.Config) error {
 		return fmt.Errorf("closing temp file: %w", err)
 	}
 
-	var cmd *exec.Cmd
+	chart := cfg.ChartName()
+	var repoArgs []string
+	var workDir string
 	if cfg.Chart.IsLocal() {
 		log.Printf(">>> Rendering local chart %s as release %q in namespace %q",
 			cfg.Chart.Source, cfg.Name, cfg.Namespace())
-		cmd = exec.Command("helm", "template", cfg.Name, cfg.Chart.Source,
-			"--namespace", cfg.Namespace(),
-			"--include-crds",
-			"--values", tmp.Name(),
-		)
-		cmd.Dir = cfg.ConfigDir
+		chart = cfg.Chart.Source
+		workDir = cfg.ConfigDir
 	} else {
 		log.Printf(">>> Rendering %s version %s as release %q in namespace %q",
 			cfg.ChartName(), cfg.Chart.Version, cfg.Name, cfg.Namespace())
-		cmd = exec.Command("helm", "template", cfg.Name, cfg.ChartName(),
-			"--repo", cfg.Chart.Source,
-			"--namespace", cfg.Namespace(),
-			"--version", cfg.Chart.Version,
-			"--include-crds",
-			"--values", tmp.Name(),
-		)
+		repoArgs = []string{"--repo", cfg.Chart.Source, "--version", cfg.Chart.Version}
 	}
+
+	args := append([]string{"template", cfg.Name, chart,
+		"--namespace", cfg.Namespace(),
+		"--include-crds",
+		"--values", tmp.Name(),
+	}, repoArgs...)
+
+	cmd := exec.Command("helm", args...)
+	cmd.Dir = workDir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
