@@ -1,4 +1,0 @@
-name: cluster-test
-chart:
-  source: ../../../charts/cluster/hetzner/
-values: {}
