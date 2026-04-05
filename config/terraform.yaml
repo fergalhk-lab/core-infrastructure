@@ -3,5 +3,6 @@ modules:
   - foundation/aws/platform
   - edge/zones
   - foundation/hetzner/management/bootstrap
+  - foundation/hetzner/management/config
   - foundation/build/container-images
   - foundation/github/org
