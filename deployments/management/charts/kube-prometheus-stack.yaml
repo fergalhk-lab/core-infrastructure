@@ -7,10 +7,16 @@ values:
   grafana:
     enabled: true
 
-    admin:
-      existingSecret: grafana-admin-credentials
-      userKey: admin-user
-      passwordKey: admin-password
+    envFromSecret: grafana-github-oauth
+
+    env:
+      GF_AUTH_GITHUB_ENABLED: "true"
+      GF_AUTH_GITHUB_SCOPES: "user:email,read:org"
+      GF_AUTH_GITHUB_ALLOWED_ORGANIZATIONS: "fergalhk-lab"
+      GF_AUTH_GITHUB_ROLE_ATTRIBUTE_PATH: "'Admin'"
+      GF_AUTH_GITHUB_ROLE_ATTRIBUTE_STRICT: "true"
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      GF_AUTH_BASIC_ENABLED: "false"
 
     initChownData:
       enabled: false
@@ -88,35 +94,30 @@ values:
         memory: 64Mi
 
 extraObjects:
-  - apiVersion: generators.external-secrets.io/v1alpha1
-    kind: Password
-    metadata:
-      name: grafana-admin-password
-      namespace: kube-prometheus-stack
-    spec:
-      length: 64
-      noUpper: false
-      allowRepeat: true
-      symbols: 0
-
   - apiVersion: external-secrets.io/v1beta1
     kind: ExternalSecret
     metadata:
-      name: grafana-admin-credentials
+      name: grafana-github-oauth
       namespace: kube-prometheus-stack
     spec:
-      refreshInterval: 0s
-      dataFrom:
-        - sourceRef:
-            generatorRef:
-              apiVersion: generators.external-secrets.io/v1alpha1
-              kind: Password
-              name: grafana-admin-password
+      refreshInterval: 1h
+      secretStoreRef:
+        name: aws-secrets-manager
+        kind: ClusterSecretStore
       target:
-        name: grafana-admin-credentials
+        name: grafana-github-oauth
         creationPolicy: Owner
         deletionPolicy: Retain
         template:
           data:
-            admin-user: admin
-            admin-password: "{{ .password }}"
+            GF_AUTH_GITHUB_CLIENT_ID: "{{ .client_id }}"
+            GF_AUTH_GITHUB_CLIENT_SECRET: "{{ .client_secret }}"
+      data:
+        - secretKey: client_id
+          remoteRef:
+            key: apikeys/github-oauth/grafana
+            property: client_id
+        - secretKey: client_secret
+          remoteRef:
+            key: apikeys/github-oauth/grafana
+            property: client_secret
