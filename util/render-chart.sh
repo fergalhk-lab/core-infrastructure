@@ -21,7 +21,7 @@ if [[ ! -f "$CONFIG" ]]; then
 fi
 
 
-NAMESPACE="$(yq e -r .namespace "${CONFIG}")"
+NAMESPACE="$(yq e -r .name "${CONFIG}")"
 
 [[ -z "${NAMESPACE}" ]] && {
   echo "Namespace not set in config!" >&2

@@ -1,5 +1,4 @@
 name: cert-manager
-namespace: cert-manager
 chart:
   source: https://charts.jetstack.io
   name: cert-manager

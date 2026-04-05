@@ -1,5 +1,4 @@
 name: kube-prometheus-stack
-namespace: kube-prometheus-stack
 chart:
   source: https://prometheus-community.github.io/helm-charts
   name: kube-prometheus-stack

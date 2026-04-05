@@ -38,11 +38,11 @@ func Render(cfg *config.Config) error {
 	}
 
 	log.Printf(">>> Rendering %s version %s as release %q in namespace %q",
-		cfg.ChartName(), cfg.Chart.Version, cfg.Name, cfg.Namespace)
+		cfg.ChartName(), cfg.Chart.Version, cfg.Name, cfg.Namespace())
 
 	cmd := exec.Command("helm", "template", cfg.Name, cfg.ChartName(),
 		"--repo", cfg.Chart.Source,
-		"--namespace", cfg.Namespace,
+		"--namespace", cfg.Namespace(),
 		"--version", cfg.Chart.Version,
 		"--include-crds",
 		"--values", tmp.Name(),
