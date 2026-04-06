@@ -2,28 +2,25 @@ apiVersion: cluster.x-k8s.io/v1beta1
 kind: MachineDeployment
 metadata:
   labels:
-    nodepool: {{ .Values.clusterName }}-md-0
-  name: {{ .Values.clusterName }}-md-0
-  namespace: {{ .Release.Namespace }}
+    nodepool: {{ .Release.Name }}-md-0
+  name: {{ .Release.Name }}-md-0
 spec:
-  clusterName: {{ .Values.clusterName }}
+  clusterName: {{ .Release.Name }}
   replicas: {{ .Values.workers.replicas }}
-  # selector:
-  #   matchLabels: null
   template:
     metadata:
       labels:
-        nodepool: {{ .Values.clusterName }}-md-0
+        nodepool: {{ .Release.Name }}-md-0
     spec:
       bootstrap:
         configRef:
           apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
           kind: KubeadmConfigTemplate
-          name: {{ .Values.clusterName }}-md-0
-      clusterName: {{ .Values.clusterName }}
+          name: {{ .Release.Name }}-md-0
+      clusterName: {{ .Release.Name }}
       failureDomain: {{ .Values.hetzner.region }}
       infrastructureRef:
         apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
         kind: HCloudMachineTemplate
-        name: {{ .Values.clusterName }}-md-0
+        name: {{ .Release.Name }}-md-0
       version: {{ .Values.kubernetes.version }}

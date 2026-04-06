@@ -1,8 +1,7 @@
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: HetznerCluster
 metadata:
-  name: {{ .Values.clusterName }}
-  namespace: {{ .Release.Namespace }}
+  name: {{ .Release.Name }}
 spec:
   controlPlaneEndpoint:
     host: ""

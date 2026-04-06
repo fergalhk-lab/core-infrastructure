@@ -2,7 +2,6 @@ apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: HCloudRemediationTemplate
 metadata:
   name: worker-remediation-request
-  namespace: {{ .Release.Namespace }}
 spec:
   template:
     spec:

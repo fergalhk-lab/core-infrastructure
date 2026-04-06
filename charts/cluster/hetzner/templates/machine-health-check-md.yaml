@@ -1,10 +1,9 @@
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: MachineHealthCheck
 metadata:
-  name: {{ .Values.clusterName }}-md-0-unhealthy-5m
-  namespace: {{ .Release.Namespace }}
+  name: {{ .Release.Name }}-md-0-unhealthy-5m
 spec:
-  clusterName: {{ .Values.clusterName }}
+  clusterName: {{ .Release.Name }}
   maxUnhealthy: 100%
   nodeStartupTimeout: 10m
   remediationTemplate:
@@ -13,7 +12,7 @@ spec:
     name: worker-remediation-request
   selector:
     matchLabels:
-      nodepool: {{ .Values.clusterName }}-md-0
+      nodepool: {{ .Release.Name }}-md-0
   unhealthyConditions:
   - status: Unknown
     timeout: 180s

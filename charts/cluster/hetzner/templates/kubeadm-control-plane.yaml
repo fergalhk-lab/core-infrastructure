@@ -1,8 +1,7 @@
 apiVersion: controlplane.cluster.x-k8s.io/v1beta1
 kind: KubeadmControlPlane
 metadata:
-  name: {{ .Values.clusterName }}-control-plane
-  namespace: {{ .Release.Namespace }}
+  name: {{ .Release.Name }}-control-plane
 spec:
   kubeadmConfigSpec:
     clusterConfiguration:
@@ -10,7 +9,6 @@ spec:
         extraArgs:
           authorization-mode: Node,RBAC
           client-ca-file: /etc/kubernetes/pki/ca.crt
-          cloud-provider: external
           default-not-ready-toleration-seconds: "45"
           default-unreachable-toleration-seconds: "45"
           enable-aggregator-routing: "true"
@@ -219,6 +217,6 @@ spec:
     infrastructureRef:
       apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
       kind: HCloudMachineTemplate
-      name: {{ .Values.clusterName }}-control-plane
+      name: {{ .Release.Name }}-control-plane
   replicas: {{ .Values.controlPlane.replicas }}
   version: {{ .Values.kubernetes.version }}

@@ -1,8 +1,7 @@
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: HCloudMachineTemplate
 metadata:
-  name: {{ .Values.clusterName }}-md-0
-  namespace: {{ .Release.Namespace }}
+  name: {{ .Release.Name }}-md-0
 spec:
   template:
     spec:
