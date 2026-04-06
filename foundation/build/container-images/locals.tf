@@ -7,7 +7,12 @@ locals {
   container_images = {
     "apps/billsplit" = {
       github_workflows = [
-        { repo = "fergalhk-lab/apps" }
+        { repo = "fergalhk-lab/apps" },
+      ]
+    }
+    "capi-argocd-bootstrapper" = {
+      github_workflows = [
+        { repo = "fergalhk-lab/apps" },
       ]
     }
   }
