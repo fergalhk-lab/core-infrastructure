@@ -39,3 +39,12 @@ spec:
               port: 8081
             initialDelaySeconds: 5
             periodSeconds: 10
+      volumes:
+        # Required for ECR plugin to auth to AWS
+        # TODO - add a mutating webhook to add this
+        - name: ecr-pull-token
+          projected:
+            sources:
+            - serviceAccountToken:
+                audience: sts.amazonaws.com
+                expirationSeconds: 86400
