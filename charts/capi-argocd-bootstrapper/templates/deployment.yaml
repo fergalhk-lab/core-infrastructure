@@ -44,8 +44,8 @@ spec:
         # TODO - add a mutating webhook to add this
         - name: ecr-pull-token
           projected:
-            path: ecr
             sources:
             - serviceAccountToken:
                 audience: sts.amazonaws.com
                 expirationSeconds: 86400
+                path: ecr-token
