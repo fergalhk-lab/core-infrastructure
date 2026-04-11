@@ -4,13 +4,12 @@ on:
   push:
     branches:
       - main
-    paths:
+    paths: &filterPaths
+      - "charts/**"
       - "deployments/**"
       - "util/render-chart**"
   pull_request:
-    paths:
-      - "deployments/**"
-      - "util/render-chart**"
+    paths: *filterPaths
   workflow_dispatch: {}
 
 concurrency:
