@@ -32,19 +32,23 @@ jobs:
         run: |
           all_modules=$(yq -o=json -I=0 '.modules' config/terraform.yaml)
 
-          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
-            include_all=true
-          elif [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
-            changed_dirs=$(git diff --name-only "origin/${GITHUB_BASE_REF}...HEAD")
-            include_all=false
-          elif [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
-            if [[ "$BEFORE_SHA" == "0000000000000000000000000000000000000000" ]]; then
+          case "$GITHUB_EVENT_NAME" in
+            workflow_dispatch)
               include_all=true
-            else
-              changed_dirs=$(git diff --name-only "${BEFORE_SHA}..${GITHUB_SHA}")
+              ;;
+            pull_request)
+              changed_dirs=$(git diff --name-only "origin/${GITHUB_BASE_REF}...HEAD")
               include_all=false
-            fi
-          fi
+              ;;
+            push)
+              if [[ "$BEFORE_SHA" == "0000000000000000000000000000000000000000" ]]; then
+                include_all=true
+              else
+                changed_dirs=$(git diff --name-only "${BEFORE_SHA}..${GITHUB_SHA}")
+                include_all=false
+              fi
+              ;;
+          esac
 
           if [[ "$include_all" == "true" ]]; then
             matrix=$(echo "$all_modules" | jq -c '[.[] | {"dir": .}]')
