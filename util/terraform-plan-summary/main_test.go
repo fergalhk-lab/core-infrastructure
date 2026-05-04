@@ -80,3 +80,8 @@ func TestWriteTable_EmptySlice(t *testing.T) {
 	writeTable(&buf, []row{})
 	assert.Equal(t, "_No changes._\n", buf.String())
 }
+
+func TestParsePlan_InvalidJSON(t *testing.T) {
+	_, err := parsePlan(strings.NewReader("not valid json"))
+	require.Error(t, err)
+}
