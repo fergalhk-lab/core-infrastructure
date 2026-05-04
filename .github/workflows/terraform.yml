@@ -22,15 +22,42 @@ jobs:
       matrix: ${{ steps.generate.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Generate matrix
         id: generate
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
         run: |
-          matrix=$(yq -o=json -I=0 '.modules | map({"dir": .})' config/terraform.yaml)
+          all_modules=$(yq -o=json -I=0 '.modules' config/terraform.yaml)
+
+          case "$GITHUB_EVENT_NAME" in
+            workflow_dispatch)
+              include_all=true
+              ;;
+            pull_request)
+              changed_dirs=$(git diff --name-only "origin/${GITHUB_BASE_REF}...HEAD")
+              include_all=false
+              ;;
+            push)
+              changed_dirs=$(git diff --name-only "${BEFORE_SHA}..${GITHUB_SHA}")
+              include_all=false
+              ;;
+          esac
+
+          if [[ "$include_all" == "true" ]]; then
+            matrix=$(echo "$all_modules" | jq -c '[.[] | {"dir": .}]')
+          else
+            matrix=$(echo "$all_modules" | jq -c --arg changed "$changed_dirs" \
+              '[.[] | rtrimstr("/") as $m | select(($changed | split("\n") | map(. == $m or startswith($m + "/")) | any))] | map({"dir": .})')
+          fi
+
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
   plan:
     needs: generate-matrix
+    if: needs.generate-matrix.outputs.matrix != '[]'
     runs-on: ubuntu-latest
     name: plan (${{ matrix.dir }})
     concurrency:
@@ -55,19 +82,12 @@ jobs:
           aws s3 cp "${{ matrix.dir }}/plan.tfplan" \
             "s3://fergalhk-terraform-state/plans/${{ github.run_id }}/${{ matrix.dir }}/plan.tfplan"
 
-  apply-gate:
-    needs: plan
-    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref_name == github.event.repository.default_branch
-    runs-on: ubuntu-latest
-    environment: terraform-apply
-    steps:
-      - run: echo "Approved"
-
   apply:
-    needs: [generate-matrix, apply-gate]
-    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref_name == github.event.repository.default_branch
+    needs: [generate-matrix, plan]
+    if: needs.generate-matrix.outputs.matrix != '[]' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
     name: apply (${{ matrix.dir }})
+    environment: terraform-apply
     concurrency:
       group: terraform-${{ matrix.dir }}
       cancel-in-progress: false
