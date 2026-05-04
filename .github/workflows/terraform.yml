@@ -22,11 +22,37 @@ jobs:
       matrix: ${{ steps.generate.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Generate matrix
         id: generate
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
         run: |
-          matrix=$(yq -o=json -I=0 '.modules | map({"dir": .})' config/terraform.yaml)
+          all_modules=$(yq -o=json -I=0 '.modules' config/terraform.yaml)
+
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            include_all=true
+          elif [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            changed_dirs=$(git diff --name-only "origin/${GITHUB_BASE_REF}...HEAD")
+            include_all=false
+          elif [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            if [[ "$BEFORE_SHA" == "0000000000000000000000000000000000000000" ]]; then
+              include_all=true
+            else
+              changed_dirs=$(git diff --name-only "${BEFORE_SHA}...${GITHUB_SHA}")
+              include_all=false
+            fi
+          fi
+
+          if [[ "$include_all" == "true" ]]; then
+            matrix=$(echo "$all_modules" | jq -c '[.[] | {"dir": .}]')
+          else
+            matrix=$(echo "$all_modules" | jq -c --arg changed "$changed_dirs" \
+              '[.[] | . as $mod | select(($changed | split("\n") | map(startswith($mod)) | any))] | map({"dir": .})')
+          fi
+
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
   plan:
