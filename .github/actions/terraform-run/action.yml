@@ -47,15 +47,17 @@ runs:
     - name: Write plan summary
       if: inputs.command == 'plan'
       shell: bash
+      env:
+        TF_DIR: ${{ inputs.directory }}
       run: |
         {
-          echo "## Plan: ${{ inputs.directory }}"
+          echo "## Plan: ${TF_DIR}"
           echo ""
-          util/terraform.sh "${{ inputs.directory }}" show -json plan.tfplan \
+          util/terraform.sh "${TF_DIR}" show -json plan.tfplan \
             | go run ./util/terraform-plan-summary
           echo ""
           echo "### Full Plan"
           echo '```hcl'
-          util/terraform.sh "${{ inputs.directory }}" show -no-color plan.tfplan
+          util/terraform.sh "${TF_DIR}" show -no-color plan.tfplan
           echo '```'
         } >> "$GITHUB_STEP_SUMMARY"
