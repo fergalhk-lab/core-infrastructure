@@ -36,3 +36,26 @@ runs:
         else
           util/terraform.sh "${{ inputs.directory }}" apply plan.tfplan
         fi
+
+    - name: Setup Go
+      if: inputs.command == 'plan'
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: go.mod
+        cache: true
+
+    - name: Write plan summary
+      if: inputs.command == 'plan'
+      shell: bash
+      run: |
+        {
+          echo "## Plan: ${{ inputs.directory }}"
+          echo ""
+          util/terraform.sh "${{ inputs.directory }}" show -json plan.tfplan \
+            | go run ./util/terraform-plan-summary
+          echo ""
+          echo "### Full Plan"
+          echo '```hcl'
+          util/terraform.sh "${{ inputs.directory }}" show -no-color plan.tfplan
+          echo '```'
+        } >> "$GITHUB_STEP_SUMMARY"
