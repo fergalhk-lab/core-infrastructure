@@ -50,7 +50,7 @@ jobs:
             matrix=$(echo "$all_modules" | jq -c '[.[] | {"dir": .}]')
           else
             matrix=$(echo "$all_modules" | jq -c --arg changed "$changed_dirs" \
-              '[.[] | . as $mod | select(($changed | split("\n") | map(. == $mod or startswith($mod + "/")) | any))] | map({"dir": .})')
+              '[.[] | ($mod | rtrimstr("/")) as $m | select(($changed | split("\n") | map(. == $m or startswith($m + "/")) | any))] | map({"dir": .})')
           fi
 
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
