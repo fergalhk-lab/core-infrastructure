@@ -41,12 +41,8 @@ jobs:
               include_all=false
               ;;
             push)
-              if [[ "$BEFORE_SHA" == "0000000000000000000000000000000000000000" ]]; then
-                include_all=true
-              else
-                changed_dirs=$(git diff --name-only "${BEFORE_SHA}..${GITHUB_SHA}")
-                include_all=false
-              fi
+              changed_dirs=$(git diff --name-only "${BEFORE_SHA}..${GITHUB_SHA}")
+              include_all=false
               ;;
           esac
 
