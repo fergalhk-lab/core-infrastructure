@@ -41,7 +41,7 @@ jobs:
             if [[ "$BEFORE_SHA" == "0000000000000000000000000000000000000000" ]]; then
               include_all=true
             else
-              changed_dirs=$(git diff --name-only "${BEFORE_SHA}...${GITHUB_SHA}")
+              changed_dirs=$(git diff --name-only "${BEFORE_SHA}..${GITHUB_SHA}")
               include_all=false
             fi
           fi
@@ -50,7 +50,7 @@ jobs:
             matrix=$(echo "$all_modules" | jq -c '[.[] | {"dir": .}]')
           else
             matrix=$(echo "$all_modules" | jq -c --arg changed "$changed_dirs" \
-              '[.[] | . as $mod | select(($changed | split("\n") | map(startswith($mod)) | any))] | map({"dir": .})')
+              '[.[] | . as $mod | select(($changed | split("\n") | map(. == $mod or startswith($mod + "/")) | any))] | map({"dir": .})')
           fi
 
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
