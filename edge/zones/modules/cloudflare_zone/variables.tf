@@ -11,3 +11,12 @@ variable "security_level" {
     error_message = format("The value of var.security_level must be one of %v", ["off", "essentially_off", "low", "medium", "high", "under_attack"])
   }
 }
+
+variable "ssl_mode" {
+  type        = string
+  description = "The SSL mode to configure for the zone"
+  validation {
+    condition     = contains(["off", "flexible", "full", "strict"], var.ssl_mode)
+    error_message = format("The value of var.ssl_mode must be one of %v", ["off", "flexible", "full", "strict"])
+  }
+}

@@ -6,6 +6,7 @@ locals {
 
   zone_defaults = {
     security_level = "high"
+    ssl_mode       = "strict"
   }
 }
 
@@ -15,4 +16,5 @@ module "cloudflare_zones" {
 
   fqdn           = each.key
   security_level = lookup(each.value, "security_level", local.zone_defaults.security_level)
+  ssl_mode       = lookup(each.value, "ssl_mode", local.zone_defaults.ssl_mode)
 }
