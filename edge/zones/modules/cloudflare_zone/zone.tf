@@ -1,6 +1,7 @@
 locals {
   zone_settings = {
     security_level = var.security_level
+    ssl            = var.ssl_mode
   }
 
   cloudflare_account_id = module.meta.cloudflare_account_id
