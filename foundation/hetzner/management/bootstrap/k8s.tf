@@ -1,7 +1,7 @@
 locals {
   management_k8s = {
     name          = "management-k8s"
-    image_version = "20260404234425"
+    image_version = "20260504182957"
     size          = "cx33" // 4vCPU / 8 GiB memory
     location      = "nbg1" // Nuremberg
     apiserver_endpoint = {
@@ -38,6 +38,12 @@ EOD
   }
 
   depends_on = [hcloud_network_subnet.management]
+
+  lifecycle {
+    ignore_changes = [
+      image,
+    ]
+  }
 }
 
 module "management_k8s_apiserver_dns" {
