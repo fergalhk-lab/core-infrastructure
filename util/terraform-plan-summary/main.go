@@ -37,6 +37,7 @@ func actionLabel(actions []string) (string, bool) {
 	case "delete,create", "create,delete":
 		return "replace", true
 	default:
+		// no-op, read, and any unknown actions are intentionally skipped
 		return "", false
 	}
 }
