@@ -4,7 +4,7 @@ locals {
       private      = false
       description  = "foundational infrastructure"
       environments = {
-        "terraform-apply" = { reviewer_usernames = ["fhke"] }
+        "terraform-apply" = { reviewer_usernames = ["fergalhk"] }
       }
     }
     "apps" = {
