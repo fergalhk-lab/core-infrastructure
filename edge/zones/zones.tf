@@ -1,7 +1,9 @@
 locals {
   // `zones` is a map of FQDN to configuration for all DNS zones.
   zones = {
-    "fergal.website" = {}
+    "fergal.website" = {
+      ssl_mode = "full"
+    }
   }
 
   zone_defaults = {
