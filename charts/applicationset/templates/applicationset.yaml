@@ -1,0 +1,35 @@
+{{- range $name, $config := .Values.applicationSets }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: {{ $name }}
+  namespace: {{ $.Values.argocdNamespace }}
+spec:
+  syncPolicy:
+    preserveResourcesOnDeletion: true
+  generators:
+    - git:
+        repoURL: {{ $config.repoURL }}
+        revision: HEAD
+        directories:
+          - path: {{ $config.directoryPath }}
+  template:
+    metadata:
+      name: "{{ $name }}-{{`{{path.basename}}`}}"
+    spec:
+      project: default
+      source:
+        repoURL: {{ $config.repoURL }}
+        targetRevision: HEAD
+        path: "{{`{{path}}`}}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{`{{path.basename}}`}}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - ServerSideApply=true
+{{- end }}
