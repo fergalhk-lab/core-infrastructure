@@ -1,32 +1,26 @@
 apiVersion: argoproj.io/v1alpha1
-kind: ApplicationSet
+kind: Application
 metadata:
-  name: deployments
+  name: applicationsets
   namespace: argocd
 spec:
+  project: default
+  source:
+    repoURL: https://github.com/fergalhk-lab/core-infrastructure
+    targetRevision: HEAD
+    path: charts/applicationset
+    helm:
+      values: |
+        applicationSets:
+          deployments:
+            repoURL: https://github.com/fergalhk-lab/k8s-deployments
+            directoryPath: clusters/*/*
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
   syncPolicy:
-    preserveResourcesOnDeletion: true
-  generators:
-    - git:
-        repoURL: https://github.com/fergalhk-lab/k8s-deployments
-        revision: HEAD
-        directories:
-          - path: clusters/*/*
-  template:
-    metadata:
-      name: "{{path[1]}}-{{path[2]}}"
-    spec:
-      project: default
-      source:
-        repoURL: https://github.com/fergalhk-lab/k8s-deployments
-        targetRevision: HEAD
-        path: "{{path}}"
-      destination:
-        server: https://kubernetes.default.svc
-        namespace: "{{path[2]}}"
-      syncPolicy:
-        automated:
-          prune: true
-          selfHeal: true
-        syncOptions:
-          - ServerSideApply=true
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
