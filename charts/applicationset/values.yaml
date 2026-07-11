@@ -1,0 +1,8 @@
+# namespace where ApplicationSet resources are created
+argocdNamespace: argocd
+
+# one ApplicationSet per entry, keyed by name
+applicationSets: {}
+#   <name>:
+#     repoURL: https://github.com/fergalhk-lab/core-infrastructure
+#     directoryPath: clusters/*/*
