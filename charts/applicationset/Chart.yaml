@@ -1,0 +1,6 @@
+apiVersion: v2
+name: applicationset
+description: Generates ArgoCD ApplicationSet resources from values
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
